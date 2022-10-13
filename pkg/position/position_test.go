@@ -8,6 +8,8 @@ import (
 	"github.com/igwedaniel/dolly/pkg/bitboard"
 )
 
+var colorMap = map[int]string{White: "white", Black: "Black"}
+
 type PrintOption struct {
 	position Position
 	piece    int
@@ -27,7 +29,7 @@ func printAttackBitboards(id string, bitboards [64]bitboard.Bitboard) {
 
 func PrintAllBoards(opts PrintOption) {
 	for colorIndex, color := range opts.position.bitboards {
-		colorMap := map[int]string{White: "white", Black: "Black"}
+
 		fmt.Printf("color: %s bitboards\n", colorMap[colorIndex])
 		for piece, bitboards := range color {
 			if piece == opts.piece {
@@ -62,15 +64,42 @@ func getBishopAttacksAtIndex(square int) bitboard.Bitboard {
 func getQueenAttacks(square int) bitboard.Bitboard {
 	return getBishopAttacksAtIndex(square) | getRookAttacksAtIndex(square)
 }
+func PrintPositionRookAttacks(p Position) {
+	for color := White; color <= Black; color++ {
+		rooks := p.bitboards[color][Rook]
+		rooks.Print()
+		fmt.Printf("rooks default\n")
+		for !rooks.IsEmpty() {
+
+			rookIdx := rooks.LsbIdx()
+
+			p.RookAttacks(rookIdx).Print()
+			fmt.Printf("%s rooks  attacks on %v\n", colorMap[color], rookIdx)
+			rooks.RemoveBit(rookIdx)
+		}
+
+	}
+
+}
 
 func TestPositionParseFen(t *testing.T) {
 	var p *Position
-	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	/* 	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	   	PrintPositionRookAttacks(*p)
+	   	p.Print()
+	   	p = NewFenPosition("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
+	   	p.Print()
+	   	PrintPositionRookAttacks(*p)
+	   	p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
+	   	p.Print()
+	   	PrintPositionRookAttacks(*p) */
+
+	// p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
+	p = NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+	// p = NewFenPosition("rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1")
 	p.Print()
-	p = NewFenPosition("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
-	p.Print()
-	p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
-	p.Print()
+	PrintPositionRookAttacks(*p)
+	p.bitboards[White][Rook].Print()
 	// p.RookAttacks(0).Print()
 	// PrintAllBoards(PrintOption{position: *p, piece: Pawn})
 
@@ -89,15 +118,15 @@ func TestPositionParseFen(t *testing.T) {
 	// printAttackBitboards("southWestArray", attacks.SouthWestRay)
 	// printAttackBitboards("southEastArray", attacks.SouthEastRay)
 
-	square := 35
-	// fmt.Printf("attack at %v", square)
-	sqBb := bitboard.New(square)
-	sqBb.SetBit(53)
-	// sqBb = bitboard.NewMask(0)
-	sqBb.Print()
-	fmt.Println("trailing zeros count: ", sqBb.LsbIdx())
-	fmt.Println("leading zeros count: ", sqBb.MsbIdx())
-
+	/* 	square := 35
+	   	// fmt.Printf("attack at %v", square)
+	   	sqBb := bitboard.New(square)
+	   	sqBb.SetBit(53)
+	   	// sqBb = bitboard.NewMask(0)
+	   	sqBb.Print()
+	   	fmt.Println("trailing zeros count: ", sqBb.LsbIdx())
+	   	fmt.Println("leading zeros count: ", sqBb.MsbIdx())
+	*/
 	// attacks := getQueenAttacks(square)
 	// attacks.Print()
 

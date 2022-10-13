@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/igwedaniel/dolly/pkg/attacks"
 	"github.com/igwedaniel/dolly/pkg/bitboard"
 	"github.com/igwedaniel/dolly/pkg/moves"
 )
@@ -17,7 +18,7 @@ const (
 )
 
 const (
-	occupancySq = iota
+	OccupancySq = iota
 	King
 	Queen
 	Bishop
@@ -136,6 +137,8 @@ func (p *Position) setBitboardsFromFen(fenPosition string) {
 			p.bitboards[Black][King].SetBit(sqIdx)
 		case "K":
 			p.bitboards[White][King].SetBit(sqIdx)
+		case "1":
+
 		case "2":
 			sqIdx++
 		case "3":
@@ -159,7 +162,7 @@ func (p *Position) setBitboardsFromFen(fenPosition string) {
 }
 
 func (p *Position) setOccupancy(color int) {
-	p.bitboards[color][occupancySq] = bitboard.Bitboard(
+	p.bitboards[color][OccupancySq] = bitboard.Bitboard(
 		p.bitboards[color][Pawn] |
 			p.bitboards[color][Rook] |
 			p.bitboards[color][Knight] |
@@ -172,7 +175,7 @@ func (p *Position) Print() {
 	chess_gyphicons := [2][]string{}
 	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
 	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
-	p.ocuppancy().Print()
+	p.Occupancy().Print()
 
 	for sq := 0; sq < 64; sq++ {
 
@@ -201,11 +204,42 @@ func (p *Position) Print() {
 	fmt.Println("")
 }
 
-func (p *Position) ocuppancy() bitboard.Bitboard {
-	return p.bitboards[White][occupancySq] | p.bitboards[Black][occupancySq]
+func (p *Position) Occupancy() bitboard.Bitboard {
+	return p.bitboards[White][OccupancySq] | p.bitboards[Black][OccupancySq]
 }
 
 func (p *Position) RookAttacks(square int) bitboard.Bitboard {
 	rookAttacks := bitboard.NewMask(0)
+	// North Attacks
+	rookAttacks |= attacks.NorthRay[square]
+	blockers := p.Occupancy() & attacks.NorthRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.MsbIdx()
+		rookAttacks &= ^attacks.NorthRay[blockerIdx]
+	}
+	// South Attacks
+	rookAttacks |= attacks.SouthRay[square]
+	blockers = p.Occupancy() & attacks.SouthRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.LsbIdx()
+		rookAttacks ^= attacks.SouthRay[blockerIdx]
+	}
+
+	// West Attacks
+	rookAttacks |= attacks.WestRay[square]
+	blockers = p.Occupancy() & attacks.WestRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.MsbIdx()
+		rookAttacks ^= attacks.WestRay[blockerIdx]
+	}
+
+	// East Attacks
+	rookAttacks |= attacks.EastRay[square]
+	blockers = p.Occupancy() & attacks.EastRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.LsbIdx()
+		rookAttacks &= ^attacks.EastRay[blockerIdx]
+	}
+
 	return rookAttacks
 }

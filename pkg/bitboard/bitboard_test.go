@@ -65,7 +65,7 @@ func TestBitboardPopCount(t *testing.T) {
 
 }
 
-func TestBitboardLsbIndex(t *testing.T) {
+func TestBitboardLsbIdx(t *testing.T) {
 	tests := []struct {
 		b     Bitboard
 		index int
@@ -78,7 +78,7 @@ func TestBitboardLsbIndex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			ls1bIndex := tt.b.LsbIndex()
+			ls1bIndex := tt.b.LsbIdx()
 			if ls1bIndex != tt.index {
 				t.Errorf("incorrect result: expected %v, got %v", tt.index, ls1bIndex)
 			}
