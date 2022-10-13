@@ -1,6 +1,9 @@
 package bitboard
 
-import "fmt"
+import (
+	"fmt"
+	"math/bits"
+)
 
 type Bitboard uint64
 
@@ -38,17 +41,25 @@ func (b Bitboard) PopCount() int {
 	return count
 }
 
-func (b Bitboard) LsbIndex() int {
+func (b Bitboard) LsbIdx() int {
 	if !b.IsEmpty() {
-		bitboard := Bitboard((b & -b) - 1)
-		return bitboard.PopCount()
+		return bits.TrailingZeros(uint(b))
 
 	} else {
 		return -1
 	}
 }
 
-func (b *Bitboard) Print() {
+func (b Bitboard) MsbIdx() int {
+	if !b.IsEmpty() {
+		return 63 - bits.LeadingZeros(uint(b))
+
+	} else {
+		return -1
+	}
+}
+
+func (b Bitboard) Print() {
 	var i int
 	fmt.Println("")
 	for i = 0; i < 64; i++ {

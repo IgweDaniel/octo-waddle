@@ -172,6 +172,7 @@ func (p *Position) Print() {
 	chess_gyphicons := [2][]string{}
 	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
 	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
+	p.ocuppancy().Print()
 
 	for sq := 0; sq < 64; sq++ {
 
@@ -195,5 +196,16 @@ func (p *Position) Print() {
 			fmt.Println("")
 		}
 	}
+	fmt.Println("castling rights", p.castlingRights)
+	fmt.Println("enpassantSquare", p.enPassanteSq)
 	fmt.Println("")
+}
+
+func (p *Position) ocuppancy() bitboard.Bitboard {
+	return p.bitboards[White][occupancySq] | p.bitboards[Black][occupancySq]
+}
+
+func (p *Position) RookAttacks(square int) bitboard.Bitboard {
+	rookAttacks := bitboard.NewMask(0)
+	return rookAttacks
 }

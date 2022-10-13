@@ -64,19 +64,15 @@ func getQueenAttacks(square int) bitboard.Bitboard {
 }
 
 func TestPositionParseFen(t *testing.T) {
-	/* 	var p *Position
-	   	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	   	p.Print()
-
-	   	p = NewFenPosition("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
-	   	p.Print()
-	   	p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
-	   	// PrintAllBoards(PrintOption{position: *p, piece: Pawn})
-	   	fmt.Println("castling rights", p.castlingRights)
-	   	fmt.Println("enpassantSquare", p.enPassanteSq)
-	   	// fmt.Println("pieceMap", p.pieceMap)
-	   	p.Print()
-	*/
+	var p *Position
+	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	p.Print()
+	p = NewFenPosition("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
+	p.Print()
+	p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
+	p.Print()
+	// p.RookAttacks(0).Print()
+	// PrintAllBoards(PrintOption{position: *p, piece: Pawn})
 
 	// printAttackBitboards("knight attcks", attacks.Knights)
 	// printAttackBitboards("knight attacks", attacks.Kings)
@@ -94,12 +90,16 @@ func TestPositionParseFen(t *testing.T) {
 	// printAttackBitboards("southEastArray", attacks.SouthEastRay)
 
 	square := 35
-	fmt.Printf("attack at %v", square)
+	// fmt.Printf("attack at %v", square)
 	sqBb := bitboard.New(square)
+	sqBb.SetBit(53)
+	// sqBb = bitboard.NewMask(0)
 	sqBb.Print()
+	fmt.Println("trailing zeros count: ", sqBb.LsbIdx())
+	fmt.Println("leading zeros count: ", sqBb.MsbIdx())
 
-	attacks := getQueenAttacks(square)
-	attacks.Print()
+	// attacks := getQueenAttacks(square)
+	// attacks.Print()
 
 	fmt.Println()
 
