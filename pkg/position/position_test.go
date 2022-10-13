@@ -113,42 +113,11 @@ func TestPositionParseFen(t *testing.T) {
 
 	// p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
 	p = NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
-	PrintPositionQueenAttacks(*p)
+	// PrintPositionQueenAttacks(*p)
 	p = NewFenPosition("rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1")
-	PrintPositionQueenAttacks(*p)
+	// PrintPositionQueenAttacks(*p)
 	p = NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
 	p.Print()
-	PrintPositionQueenAttacks(*p)
-
-	// p.RookAttacks(0).Print()
-	// PrintAllBoards(PrintOption{position: *p, piece: Pawn})
-
-	// printAttackBitboards("knight attcks", attacks.Knights)
-	// printAttackBitboards("knight attacks", attacks.Kings)
-	// printAttackBitboards("black pawn attcks", attacks.Pawns[Black])
-	// printAttackBitboards("white pawn", attacks.Pawns[White])
-	// printAttackBitboards("southRay", attacks.SouthRay)
-	// printAttackBitboards("northRay", attacks.NorthRay)
-
-	// printAttackBitboards("southRay", attacks.SouthRay)
-	// printAttackBitboards("eastArray", attacks.EastRay)
-	// printAttackBitboards("westArray", attacks.WestRay)
-	// printAttackBitboards("northEastArray", attacks.NorthEastRay)
-	// printAttackBitboards("northWestArray", attacks.NorthWestRay)
-	// printAttackBitboards("southWestArray", attacks.SouthWestRay)
-	// printAttackBitboards("southEastArray", attacks.SouthEastRay)
-
-	/* 	square := 35
-	   	// fmt.Printf("attack at %v", square)
-	   	sqBb := bitboard.New(square)
-	   	sqBb.SetBit(53)
-	   	// sqBb = bitboard.NewMask(0)
-	   	sqBb.Print()
-	   	fmt.Println("trailing zeros count: ", sqBb.LsbIdx())
-	   	fmt.Println("leading zeros count: ", sqBb.MsbIdx())
-	*/
-	// attacks := getQueenAttacks(square)
-	// attacks.Print()
 
 	fmt.Println()
 

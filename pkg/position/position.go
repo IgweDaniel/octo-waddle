@@ -178,9 +178,10 @@ func (p *Position) Print() {
 	p.Occupancy().Print()
 
 	for sq := 0; sq < 64; sq++ {
-
 		var colorIdx, piece int
-
+		if ((sq) % 8) == 0 {
+			fmt.Printf("%v ", (sq/8)+1)
+		}
 		for i := range p.bitboards {
 			for idx, bitboard := range p.bitboards[i] {
 				if bitboard.BitIsSet(sq) {
@@ -194,14 +195,20 @@ func (p *Position) Print() {
 			fmt.Print(" . ")
 		} else {
 			fmt.Printf(" %s ", chess_gyphicons[colorIdx][piece])
+
 		}
+
 		if ((sq + 1) % 8) == 0 {
+
 			fmt.Println("")
+
 		}
 	}
+	fmt.Println("   a  b  c  d  e  f  g  h ")
 	fmt.Println("castling rights", p.castlingRights)
 	fmt.Println("enpassantSquare", p.enPassanteSq)
 	fmt.Println("")
+
 }
 
 func (p *Position) Occupancy() bitboard.Bitboard {
@@ -258,7 +265,7 @@ func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
 	blockers = p.Occupancy() & attacks.NorthEastRay[square]
 	bishopAttacks |= attacks.NorthEastRay[square]
 	if !blockers.IsEmpty() {
-		blockerIdx := blockers.LsbIdx()
+		blockerIdx := blockers.MsbIdx()
 		bishopAttacks &= ^attacks.NorthEastRay[blockerIdx]
 	}
 	// South East
@@ -273,7 +280,7 @@ func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
 	blockers = p.Occupancy() & attacks.SouthWestRay[square]
 	bishopAttacks |= attacks.SouthWestRay[square]
 	if !blockers.IsEmpty() {
-		blockerIdx := blockers.MsbIdx()
+		blockerIdx := blockers.LsbIdx()
 		bishopAttacks &= ^attacks.SouthWestRay[blockerIdx]
 	}
 	return bishopAttacks
@@ -281,4 +288,35 @@ func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
 
 func (p *Position) QueenAttacks(square int) bitboard.Bitboard {
 	return p.RookAttacks(square) | p.BishopAttacks(square)
+}
+
+func (p *Position) IsSquareAttackedBy(square, side int) bool {
+
+	pawnAttacks := attacks.Pawns[side^1][square] & p.bitboards[side][Pawn]
+
+	if !pawnAttacks.IsEmpty() {
+		return true
+	}
+	knightAttacks := attacks.Knights[square] & p.bitboards[side][Knight]
+	if !knightAttacks.IsEmpty() {
+		return true
+	}
+	bishopAttacks := p.BishopAttacks(square) & p.bitboards[side][Bishop]
+	if !bishopAttacks.IsEmpty() {
+		return true
+	}
+	rookAttacks := p.RookAttacks(square) & p.bitboards[side][Rook]
+	if !rookAttacks.IsEmpty() {
+		return true
+	}
+
+	queenAttacks := p.QueenAttacks(square) & p.bitboards[side][Queen]
+
+	if !queenAttacks.IsEmpty() {
+		return true
+	}
+
+	kingAttacks := attacks.Kings[square] & p.bitboards[side][King]
+
+	return !kingAttacks.IsEmpty()
 }
