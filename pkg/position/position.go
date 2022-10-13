@@ -243,3 +243,42 @@ func (p *Position) RookAttacks(square int) bitboard.Bitboard {
 
 	return rookAttacks
 }
+
+func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
+	bishopAttacks := bitboard.NewMask(0)
+	// North WestAttacks
+	bishopAttacks |= attacks.NorthWestRay[square]
+	blockers := p.Occupancy() & attacks.NorthWestRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.MsbIdx()
+		bishopAttacks &= ^attacks.NorthWestRay[blockerIdx]
+	}
+
+	// North EastAttacks
+	blockers = p.Occupancy() & attacks.NorthEastRay[square]
+	bishopAttacks |= attacks.NorthEastRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.LsbIdx()
+		bishopAttacks &= ^attacks.NorthEastRay[blockerIdx]
+	}
+	// South East
+	blockers = p.Occupancy() & attacks.SouthEastRay[square]
+	bishopAttacks |= attacks.SouthEastRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.LsbIdx()
+		bishopAttacks &= ^attacks.SouthEastRay[blockerIdx]
+	}
+
+	// South West
+	blockers = p.Occupancy() & attacks.SouthWestRay[square]
+	bishopAttacks |= attacks.SouthWestRay[square]
+	if !blockers.IsEmpty() {
+		blockerIdx := blockers.MsbIdx()
+		bishopAttacks &= ^attacks.SouthWestRay[blockerIdx]
+	}
+	return bishopAttacks
+}
+
+func (p *Position) QueenAttacks(square int) bitboard.Bitboard {
+	return p.RookAttacks(square) | p.BishopAttacks(square)
+}
