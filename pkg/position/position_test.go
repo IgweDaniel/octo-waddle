@@ -21,7 +21,7 @@ func printAttackBitboards(id string, bitboards [64]bitboard.Bitboard) {
 		idxBB := bitboard.Bitboard(0)
 		idxBB.SetBit(idx)
 		idxBB.Print()
-		fmt.Printf("%s bitboard at %v", id, idx)
+		fmt.Printf("%s bitboard at %v\n", id, idx)
 	}
 }
 
@@ -39,6 +39,30 @@ func PrintAllBoards(opts PrintOption) {
 	}
 }
 
+const (
+	fileA = bitboard.Bitboard(0x0101010101010101)
+	fileB = bitboard.Bitboard(0x0202020202020202)
+	fileG = bitboard.Bitboard(0x4040404040404040)
+	fileH = bitboard.Bitboard(0x8080808080808080)
+)
+
+func getRookAttacksAtIndex(square int) bitboard.Bitboard {
+	return attacks.NorthRay[square] |
+		attacks.SouthRay[square] |
+		attacks.EastRay[square] |
+		attacks.WestRay[square]
+}
+func getBishopAttacksAtIndex(square int) bitboard.Bitboard {
+	return attacks.NorthWestRay[square] |
+		attacks.SouthEastRay[square] |
+		attacks.NorthEastRay[square] |
+		attacks.SouthWestRay[square]
+}
+
+func getQueenAttacks(square int) bitboard.Bitboard {
+	return getBishopAttacksAtIndex(square) | getRookAttacksAtIndex(square)
+}
+
 func TestPositionParseFen(t *testing.T) {
 	/* 	var p *Position
 	   	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -53,19 +77,30 @@ func TestPositionParseFen(t *testing.T) {
 	   	// fmt.Println("pieceMap", p.pieceMap)
 	   	p.Print()
 	*/
-	// fmt.Println("chess_gyphicons", chess_gyphicons)
 
-	/* b := bitboard.Bitboard(0)
-	pos, _ := moves.AlgebriacToIndex("c6")
-	b.SetBit(pos)
-	// b.SetBit(63)
-	b.Print() */
-	// return
+	// printAttackBitboards("knight attcks", attacks.Knights)
+	// printAttackBitboards("knight attacks", attacks.Kings)
+	// printAttackBitboards("black pawn attcks", attacks.Pawns[Black])
+	// printAttackBitboards("white pawn", attacks.Pawns[White])
+	// printAttackBitboards("southRay", attacks.SouthRay)
+	// printAttackBitboards("northRay", attacks.NorthRay)
 
-	// printBitboards("white pawn", attacks.LookupTable.PawnAttacks[White])
-	// printBitboards("black pawn attcks", attacks.LookupTable.PawnAttacks[Black])
-	// printAttackBitboards("knight attcks", attacks.LookupTable.KnightAttacks)
-	printAttackBitboards("knight attacks", attacks.LookupTable.KingAttacks)
-	fmt.Println("End")
-	// attacks.LookupTable.KnightAttacks[63].Print()
+	// printAttackBitboards("southRay", attacks.SouthRay)
+	// printAttackBitboards("eastArray", attacks.EastRay)
+	// printAttackBitboards("westArray", attacks.WestRay)
+	// printAttackBitboards("northEastArray", attacks.NorthEastRay)
+	// printAttackBitboards("northWestArray", attacks.NorthWestRay)
+	// printAttackBitboards("southWestArray", attacks.SouthWestRay)
+	// printAttackBitboards("southEastArray", attacks.SouthEastRay)
+
+	square := 35
+	fmt.Printf("attack at %v", square)
+	sqBb := bitboard.New(square)
+	sqBb.Print()
+
+	attacks := getQueenAttacks(square)
+	attacks.Print()
+
+	fmt.Println()
+
 }

@@ -15,19 +15,18 @@ const (
 	fileH = bitboard.Bitboard(0x8080808080808080)
 )
 
-type AttackTable struct {
-	PawnAttacks        [2][64]bitboard.Bitboard
-	KnightAttacks      [64]bitboard.Bitboard
-	KingAttacks        [64]bitboard.Bitboard
-	NorthAttackRay     [64]bitboard.Bitboard
-	SouthAttackRay     [64]bitboard.Bitboard
-	EastAttackRay      [64]bitboard.Bitboard
-	WestAttackRay      [64]bitboard.Bitboard
-	NorthEastAttackRay [64]bitboard.Bitboard
-	NorthWestAttackRay [64]bitboard.Bitboard
-	SouthEastAttackRay [64]bitboard.Bitboard
-	SouthWestAttackRay [64]bitboard.Bitboard
-}
+var Pawns [2][64]bitboard.Bitboard
+
+var Knights,
+	Kings,
+	NorthRay,
+	SouthRay,
+	EastRay,
+	WestRay,
+	NorthEastRay,
+	NorthWestRay,
+	SouthEastRay,
+	SouthWestRay [64]bitboard.Bitboard
 
 func generateKnightAttackAtIndex(square int) bitboard.Bitboard {
 	attacks := bitboard.Bitboard(0)
@@ -87,17 +86,94 @@ func generateKingAttackAtIndex(square int) bitboard.Bitboard {
 	return attacks
 }
 
-func generateLookupTables() *AttackTable {
-	attackTable := new(AttackTable)
+func generateNorthEastRayAtIndex(square int) bitboard.Bitboard {
 
-	for index := 0; index < 64; index++ {
-		attackTable.PawnAttacks[0][index] = generateWhitePawnAttackAtIndex(index)
-		attackTable.PawnAttacks[1][index] = generateBlackPawnAttackAtIndex(index)
-		attackTable.KnightAttacks[index] = generateKnightAttackAtIndex(index)
-		attackTable.KingAttacks[index] = generateKingAttackAtIndex(index)
+	attacks := bitboard.NewMask(0)
+	sqBb := bitboard.New(square)
 
+	square -= 7
+
+	for ; square%8 != 0; square -= 7 {
+		sqBb >>= 7
+		attacks |= sqBb
 	}
-	return attackTable
+	return attacks
+
+}
+func generateNorthWestRayAtIndex(square int) bitboard.Bitboard {
+
+	attacks := bitboard.NewMask(0)
+	sqBb := bitboard.New(square)
+
+	for ; square%8 != 0; square -= 9 {
+		sqBb >>= 9
+		attacks |= sqBb
+	}
+
+	return attacks
+
+}
+func generateSouthWestRayAtIndex(square int) bitboard.Bitboard {
+
+	attacks := bitboard.NewMask(0)
+	sqBb := bitboard.New(square)
+	for ; square%8 != 0; square += 7 {
+		sqBb <<= 7
+		attacks |= sqBb
+	}
+
+	return attacks
+
+}
+func generateSouthEastRayAtIndex(square int) bitboard.Bitboard {
+
+	attacks := bitboard.NewMask(0)
+	sqBb := bitboard.New(square)
+	square += 9
+
+	for ; square%8 != 0; square += 9 {
+		sqBb <<= 9
+		attacks |= sqBb
+	}
+	return attacks
+
 }
 
-var LookupTable = generateLookupTables()
+func init() {
+
+	for index := 0; index < 64; index++ {
+		Pawns[0][index] = generateWhitePawnAttackAtIndex(index)
+		Pawns[1][index] = generateBlackPawnAttackAtIndex(index)
+		Knights[index] = generateKnightAttackAtIndex(index)
+		Kings[index] = generateKingAttackAtIndex(index)
+
+		// South Ray
+		southMask := bitboard.NewMask(0x0101010101010100)
+		SouthRay[index] = southMask << index
+
+		// North Ray
+		northMask := bitboard.NewMask(0x0080808080808080)
+		NorthRay[63-index] = northMask >> index
+
+		// east array
+		eastMask := bitboard.NewMask(1)
+		EastRay[index] = bitboard.Bitboard(2 * ((eastMask << (index | 7)) - (eastMask << index)))
+
+		// east array
+		westMask := bitboard.NewMask(1)
+		WestRay[index] = bitboard.Bitboard((westMask << index) - (westMask << (index & 56)))
+
+		//NorthEast
+		NorthEastRay[index] = generateNorthEastRayAtIndex(index)
+
+		// NorthWest
+		NorthWestRay[index] = generateNorthWestRayAtIndex(index)
+
+		// SouthWest
+		SouthWestRay[index] = generateSouthWestRayAtIndex(index)
+
+		// SouthWest
+		SouthEastRay[index] = generateSouthEastRayAtIndex(index)
+
+	}
+}

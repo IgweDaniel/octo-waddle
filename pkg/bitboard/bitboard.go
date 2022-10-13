@@ -4,6 +4,15 @@ import "fmt"
 
 type Bitboard uint64
 
+func New(pos int) Bitboard {
+	bitboard := Bitboard(0)
+	bitboard.SetBit(pos)
+	return bitboard
+}
+func NewMask(mask uint64) Bitboard {
+	return Bitboard(mask)
+}
+
 func (b *Bitboard) SetBit(pos int) {
 	*b |= Bitboard(uint64(1) << uint(pos))
 }
