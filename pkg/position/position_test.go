@@ -93,13 +93,13 @@ func TestMoveGeneration(t *testing.T) {
 	/* 	// Bishop position
 	   	p := NewFenPosition("r3k2r/p1pp1pb1/bn1qpnp1/3PN3/1p2PQ2/2N4p/PPPBBPPP/R3K2R w KQkq - 2 2") */
 
-	/* 	// start position
-	   	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") */
+	// start position
+	// p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	/* // castle position
 	p = NewFenPosition("4k2r/p1pp1pb1/1n2pnp1/3PN1q1/1p2PQ2/1PNb3P/PrPB1P1P/R3K2R w KQk - 1 4")
 	*/
-	p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
+	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
 	p.GenerateMoves()
 	p.Print()
 	// fmt.Println("clear path")
