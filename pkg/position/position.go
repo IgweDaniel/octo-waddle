@@ -17,10 +17,13 @@ const (
 	Black
 )
 const (
-	rank1 = bitboard.Bitboard(0x00000000000000FF)
-	rank4 = bitboard.Bitboard(0x00000000FF000000)
-	rank5 = bitboard.Bitboard(0x000000FF00000000)
-	rank8 = bitboard.Bitboard(0xFF00000000000000)
+	// remeber to flip the ranks according to ur visual board printout
+	rank8 = bitboard.Bitboard(0x00000000000000FF)
+	rank7 = bitboard.Bitboard(0x000000000000FF00)
+	rank5 = bitboard.Bitboard(0x00000000FF000000)
+	rank4 = bitboard.Bitboard(0x000000FF00000000)
+	rank2 = bitboard.Bitboard(0x00FF000000000000)
+	rank1 = bitboard.Bitboard(0xFF00000000000000)
 )
 const (
 	OccupancySq = iota
@@ -286,6 +289,8 @@ func (p *Position) IsSquareAttackedBy(square, side int) bool {
 	return !kingAttacks.IsEmpty()
 }
 
+var colorMap = map[int]string{White: "white", Black: "Black"}
+
 func (p *Position) Print() {
 	chess_gyphicons := [2][]string{}
 	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
@@ -320,6 +325,7 @@ func (p *Position) Print() {
 	}
 	fmt.Println("   a  b  c  d  e  f  g  h ")
 	p.getOccupancy().Print()
+	fmt.Printf("%s to move\n", colorMap[p.side])
 	fmt.Println("castling rights", p.castlingRights)
 	fmt.Println("enpassantSquare", p.enPassanteSq)
 	fmt.Println("")

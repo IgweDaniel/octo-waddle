@@ -62,9 +62,50 @@ func (m *MoveList) Print() {
 		5: "Rook",
 		6: "Pawn",
 	}
+
+	/*
+
+		Pawn at f4 can capture piece at f3 via enpassante and promote
+
+	*/
 	for _, move := range *m {
-		fmt.Printf("%s at %v can move to %v x:%v c:%v e:%v p:%v\n",
-			pieceMaps[move.Piece()], IndexToAlgebraic(move.Origin()), IndexToAlgebraic(move.Dest()),
-			move.IsCapture(), move.IsCastling(), move.Enpassant(), move.IsPromotion())
+		origin, dest := move.Origin(), move.Dest()
+		isCapture := move.IsCapture()
+		piece := pieceMaps[move.Piece()]
+		var movestr string
+		if move.IsPromotion() {
+			movestr = fmt.Sprintf("%s at %v can promote via move to %v\n",
+				piece,
+				IndexToAlgebraic(origin),
+				IndexToAlgebraic(dest),
+			)
+			if isCapture {
+				movestr = fmt.Sprintf("%s at %v can promote via capture at %v\n",
+					piece,
+					IndexToAlgebraic(origin),
+					IndexToAlgebraic(dest),
+				)
+			}
+		} else if isCapture {
+			movestr = fmt.Sprintf("%s at %v can capture piece at %v\n",
+				piece,
+				IndexToAlgebraic(origin),
+				IndexToAlgebraic(dest))
+
+			if move.Enpassant() {
+				movestr = fmt.Sprintf("%s at %v can capture piece at %v via enpassante\n",
+					piece,
+					IndexToAlgebraic(origin),
+					IndexToAlgebraic(dest),
+				)
+			}
+		} else if move.IsCastling() {
+			fmt.Println("not implemented castling formatting")
+		} else {
+			fmt.Printf("%s at %v can move to %v\n",
+				pieceMaps[move.Piece()], IndexToAlgebraic(origin),
+				IndexToAlgebraic(dest))
+		}
+		fmt.Print(movestr)
 	}
 }

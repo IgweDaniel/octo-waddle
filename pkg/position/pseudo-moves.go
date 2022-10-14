@@ -10,6 +10,7 @@ func (p *Position) GenerateMoves() moves.MoveList {
 
 	moves := moves.NewList()
 	generatePawnAttacks(p, &moves)
+	generatePawnPushes(p, &moves)
 	moves.Print()
 	return moves
 }
@@ -48,9 +49,33 @@ func generatePawnAttacks(p *Position, moves *moves.MoveList) {
 	}
 }
 
-// func generatePawnPushes(p *Position, moves *moves.MoveList) {
+func generatePawnPushes(p *Position, moves *moves.MoveList) {
 
-// 	pawns := p.bitboards[p.side][Pawn]
-// 	occupancy := p.getOccupancy()
+	var step, direction = 8, -1
+	var pawnStartRanks = bitboard.NewMask(uint64(rank2))
 
-// }
+	if p.side == Black {
+		direction = 1
+		pawnStartRanks = bitboard.NewMask(uint64(rank7))
+	}
+
+	pawns := p.bitboards[p.side][Pawn]
+	occupancy := p.getOccupancy()
+
+	for !pawns.IsEmpty() {
+		origin := pawns.LsbIdx()
+		pawns.RemoveBit(origin)
+		dest := origin + step*direction
+
+		if !occupancy.BitIsSet(dest) {
+			if pawnStartRanks.BitIsSet(origin) {
+				dblPushDest := origin + 2*step*direction
+				moves.Add(Pawn, origin, dblPushDest)
+			}
+			moves.Add(Pawn, origin, dest)
+
+		}
+
+	}
+
+}
