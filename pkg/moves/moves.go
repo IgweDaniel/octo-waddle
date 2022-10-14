@@ -68,6 +68,9 @@ func (m *MoveList) Print() {
 		Pawn at f4 can capture piece at f3 via enpassante and promote
 
 	*/
+	if len(*m) == 0 {
+		fmt.Println("No moves for this position")
+	}
 	for _, move := range *m {
 		origin, dest := move.Origin(), move.Dest()
 		isCapture := move.IsCapture()
@@ -100,7 +103,17 @@ func (m *MoveList) Print() {
 				)
 			}
 		} else if move.IsCastling() {
-			fmt.Println("not implemented castling formatting")
+
+			if dest > origin {
+				fmt.Printf("%s at %v can castle King side to %v\n",
+					pieceMaps[move.Piece()], IndexToAlgebraic(origin),
+					IndexToAlgebraic(dest))
+			} else {
+				fmt.Printf("%s at %v can castle Queen side to %v\n",
+					pieceMaps[move.Piece()], IndexToAlgebraic(origin),
+					IndexToAlgebraic(dest))
+			}
+
 		} else {
 			fmt.Printf("%s at %v can move to %v\n",
 				pieceMaps[move.Piece()], IndexToAlgebraic(origin),
@@ -108,4 +121,5 @@ func (m *MoveList) Print() {
 		}
 		fmt.Print(movestr)
 	}
+	fmt.Printf("==found %v moves==\n", len(*m))
 }

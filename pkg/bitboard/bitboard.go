@@ -73,5 +73,4 @@ func (b Bitboard) Print() {
 		}
 	}
 	fmt.Println("")
-	fmt.Println("")
 }

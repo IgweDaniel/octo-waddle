@@ -16,6 +16,9 @@ func (p *Position) GenerateMoves() moves.MoveList {
 	generateBishopMoves(p, &moves)
 	generateRookMoves(p, &moves)
 	generateQueenMoves(p, &moves)
+	generateKingMoves(p, &moves)
+	generateKingCastleMoves(p, &moves)
+
 	moves.Print()
 
 	return moves
@@ -165,5 +168,50 @@ func generateQueenMoves(p *Position, moves *moves.MoveList) {
 }
 
 func generateKingMoves(p *Position, moves *moves.MoveList) {
+	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
+	for king := p.bitboards[p.side][King]; !king.IsEmpty(); {
+
+		origin := king.LsbIdx()
+		king.RemoveBit(origin)
+
+		for attacks := attacks.Kings[origin] & ^activeSideOccupancy; !attacks.IsEmpty(); {
+			dest := attacks.LsbIdx()
+			attacks.RemoveBit(dest)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				moves.AddCapture(King, origin, dest)
+			} else {
+				moves.Add(King, origin, dest)
+			}
+		}
+
+	}
+}
+func generateKingCastleMoves(p *Position, moves *moves.MoveList) {
+	occupancy := p.getOccupancy()
+	var kingSideCastle, queenSideCastle, posIdx = WhiteKingside, WhiteQueenside, 60
+	kingsidePathMask := bitboard.NewMask(0x6000000000000000)
+	queensidePathMask := bitboard.NewMask(0xe00000000000000)
+
+	if p.side == Black {
+		kingSideCastle = BlackKingside
+		queenSideCastle = BlackQueenside
+		posIdx = 4
+		kingsidePathMask = bitboard.NewMask(0x60)
+		queensidePathMask = bitboard.NewMask(0xe)
+	}
+	if p.castlingRights&kingSideCastle != 0 {
+		if kingsidePathMask&occupancy == 0 {
+			if !p.IsSquareAttackedBy(posIdx+1, p.side^1) && !p.IsSquareAttackedBy(posIdx+2, p.side^1) {
+				moves.AddCastling(King, posIdx, posIdx+2)
+			}
+		}
+	}
+	if p.castlingRights&queenSideCastle != 0 {
+		if queensidePathMask&occupancy == 0 {
+			if !p.IsSquareAttackedBy(posIdx-1, p.side^1) && !p.IsSquareAttackedBy(posIdx-2, p.side^1) {
+				moves.AddCastling(King, posIdx, posIdx-2)
+			}
+		}
+	}
 
 }
