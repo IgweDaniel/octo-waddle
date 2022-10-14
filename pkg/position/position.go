@@ -49,11 +49,11 @@ func tokenizeFenString(fen string) (string, int, int, int, int, int) {
 		castleRights int
 	)
 
-	moveCount, err := strconv.Atoi(fenTokens[4])
+	moveCount, err := strconv.Atoi(fenTokens[5])
 	if err != nil {
 		log.Fatal(err)
 	}
-	halfMoveCount, err := strconv.Atoi(fenTokens[5])
+	halfMoveCount, err := strconv.Atoi(fenTokens[4])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func (p *Position) Print() {
 	chess_gyphicons := [2][]string{}
 	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
 	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
-	p.Occupancy().Print()
+	p.getOccupancy().Print()
 
 	for sq := 0; sq < 64; sq++ {
 		var colorIdx, piece int
@@ -211,22 +211,22 @@ func (p *Position) Print() {
 
 }
 
-func (p *Position) Occupancy() bitboard.Bitboard {
+func (p *Position) getOccupancy() bitboard.Bitboard {
 	return p.bitboards[White][OccupancySq] | p.bitboards[Black][OccupancySq]
 }
 
-func (p *Position) RookAttacks(square int) bitboard.Bitboard {
+func (p *Position) getRookAttacks(square int) bitboard.Bitboard {
 	rookAttacks := bitboard.NewMask(0)
 	// North Attacks
 	rookAttacks |= attacks.NorthRay[square]
-	blockers := p.Occupancy() & attacks.NorthRay[square]
+	blockers := p.getOccupancy() & attacks.NorthRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.MsbIdx()
 		rookAttacks &= ^attacks.NorthRay[blockerIdx]
 	}
 	// South Attacks
 	rookAttacks |= attacks.SouthRay[square]
-	blockers = p.Occupancy() & attacks.SouthRay[square]
+	blockers = p.getOccupancy() & attacks.SouthRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.LsbIdx()
 		rookAttacks ^= attacks.SouthRay[blockerIdx]
@@ -234,7 +234,7 @@ func (p *Position) RookAttacks(square int) bitboard.Bitboard {
 
 	// West Attacks
 	rookAttacks |= attacks.WestRay[square]
-	blockers = p.Occupancy() & attacks.WestRay[square]
+	blockers = p.getOccupancy() & attacks.WestRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.MsbIdx()
 		rookAttacks ^= attacks.WestRay[blockerIdx]
@@ -242,7 +242,7 @@ func (p *Position) RookAttacks(square int) bitboard.Bitboard {
 
 	// East Attacks
 	rookAttacks |= attacks.EastRay[square]
-	blockers = p.Occupancy() & attacks.EastRay[square]
+	blockers = p.getOccupancy() & attacks.EastRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.LsbIdx()
 		rookAttacks &= ^attacks.EastRay[blockerIdx]
@@ -251,25 +251,25 @@ func (p *Position) RookAttacks(square int) bitboard.Bitboard {
 	return rookAttacks
 }
 
-func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
+func (p *Position) getBishopAttacks(square int) bitboard.Bitboard {
 	bishopAttacks := bitboard.NewMask(0)
 	// North WestAttacks
 	bishopAttacks |= attacks.NorthWestRay[square]
-	blockers := p.Occupancy() & attacks.NorthWestRay[square]
+	blockers := p.getOccupancy() & attacks.NorthWestRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.MsbIdx()
 		bishopAttacks &= ^attacks.NorthWestRay[blockerIdx]
 	}
 
 	// North EastAttacks
-	blockers = p.Occupancy() & attacks.NorthEastRay[square]
+	blockers = p.getOccupancy() & attacks.NorthEastRay[square]
 	bishopAttacks |= attacks.NorthEastRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.MsbIdx()
 		bishopAttacks &= ^attacks.NorthEastRay[blockerIdx]
 	}
 	// South East
-	blockers = p.Occupancy() & attacks.SouthEastRay[square]
+	blockers = p.getOccupancy() & attacks.SouthEastRay[square]
 	bishopAttacks |= attacks.SouthEastRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.LsbIdx()
@@ -277,7 +277,7 @@ func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
 	}
 
 	// South West
-	blockers = p.Occupancy() & attacks.SouthWestRay[square]
+	blockers = p.getOccupancy() & attacks.SouthWestRay[square]
 	bishopAttacks |= attacks.SouthWestRay[square]
 	if !blockers.IsEmpty() {
 		blockerIdx := blockers.LsbIdx()
@@ -286,8 +286,8 @@ func (p *Position) BishopAttacks(square int) bitboard.Bitboard {
 	return bishopAttacks
 }
 
-func (p *Position) QueenAttacks(square int) bitboard.Bitboard {
-	return p.RookAttacks(square) | p.BishopAttacks(square)
+func (p *Position) getQueenAttacks(square int) bitboard.Bitboard {
+	return p.getRookAttacks(square) | p.getBishopAttacks(square)
 }
 
 func (p *Position) IsSquareAttackedBy(square, side int) bool {
@@ -301,16 +301,16 @@ func (p *Position) IsSquareAttackedBy(square, side int) bool {
 	if !knightAttacks.IsEmpty() {
 		return true
 	}
-	bishopAttacks := p.BishopAttacks(square) & p.bitboards[side][Bishop]
+	bishopAttacks := p.getBishopAttacks(square) & p.bitboards[side][Bishop]
 	if !bishopAttacks.IsEmpty() {
 		return true
 	}
-	rookAttacks := p.RookAttacks(square) & p.bitboards[side][Rook]
+	rookAttacks := p.getRookAttacks(square) & p.bitboards[side][Rook]
 	if !rookAttacks.IsEmpty() {
 		return true
 	}
 
-	queenAttacks := p.QueenAttacks(square) & p.bitboards[side][Queen]
+	queenAttacks := p.getQueenAttacks(square) & p.bitboards[side][Queen]
 
 	if !queenAttacks.IsEmpty() {
 		return true

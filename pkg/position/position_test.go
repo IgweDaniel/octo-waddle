@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/igwedaniel/dolly/pkg/bitboard"
+	"github.com/igwedaniel/dolly/pkg/moves"
+	"github.com/stretchr/testify/assert"
 )
 
 var colorMap = map[int]string{White: "white", Black: "Black"}
@@ -14,7 +16,7 @@ type PrintOption struct {
 	piece    int
 }
 
-func printAttackBitboards(id string, bitboards [64]bitboard.Bitboard) {
+func PrintAttackBitboards(id string, bitboards [64]bitboard.Bitboard) {
 	fmt.Println(id)
 
 	for idx, bitB := range bitboards {
@@ -40,13 +42,6 @@ func PrintAllBoards(opts PrintOption) {
 	}
 }
 
-const (
-	fileA = bitboard.Bitboard(0x0101010101010101)
-	fileB = bitboard.Bitboard(0x0202020202020202)
-	fileG = bitboard.Bitboard(0x4040404040404040)
-	fileH = bitboard.Bitboard(0x8080808080808080)
-)
-
 func PrintPositionRookAttacks(p Position) {
 	for color := White; color <= Black; color++ {
 		rooks := p.bitboards[color][Rook]
@@ -56,7 +51,7 @@ func PrintPositionRookAttacks(p Position) {
 
 			rookIdx := rooks.LsbIdx()
 
-			p.RookAttacks(rookIdx).Print()
+			p.getRookAttacks(rookIdx).Print()
 			fmt.Printf("%s rooks  attacks on %v\n", colorMap[color], rookIdx)
 			rooks.RemoveBit(rookIdx)
 		}
@@ -73,7 +68,7 @@ func PrintPositionBishopAttacks(p Position) {
 
 			bishopIdx := bishops.LsbIdx()
 
-			p.BishopAttacks(bishopIdx).Print()
+			p.getBishopAttacks(bishopIdx).Print()
 			fmt.Printf("%s bishops  attacks on %v\n", colorMap[color], bishopIdx)
 			bishops.RemoveBit(bishopIdx)
 		}
@@ -90,7 +85,7 @@ func PrintPositionQueenAttacks(p Position) {
 
 			queenIdx := queen.LsbIdx()
 
-			p.QueenAttacks(queenIdx).Print()
+			p.getQueenAttacks(queenIdx).Print()
 			fmt.Printf("%s queen  attacks on %v\n", colorMap[color], queenIdx)
 			queen.RemoveBit(queenIdx)
 		}
@@ -100,25 +95,54 @@ func PrintPositionQueenAttacks(p Position) {
 }
 
 func TestPositionParseFen(t *testing.T) {
-	var p *Position
-	/* 	p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	   	PrintPositionRookAttacks(*p)
-	   	p.Print()
-	   	p = NewFenPosition("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
-	   	p.Print()
-	   	PrintPositionRookAttacks(*p)
-	   	p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
-	   	p.Print()
-	   	PrintPositionRookAttacks(*p) */
+	assert := assert.New(t)
+	tests := []struct {
+		fen            string
+		halfMoveCount  int
+		moveCount      int
+		turn           int
+		castlingRights int
+		enpassantSq    int
+	}{
+		{"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 0, 1, White, 15, 64},
+		{"rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1", 0, 1, White, 15, 64},
+		{"rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1", 0, 1, White, 15, 20},
+		{"rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6", 1, 6, Black, 14, 64},
+	}
 
-	// p = NewFenPosition("rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6")
-	p = NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
-	// PrintPositionQueenAttacks(*p)
-	p = NewFenPosition("rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1")
-	// PrintPositionQueenAttacks(*p)
-	p = NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
-	p.Print()
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			p := NewFenPosition(tt.fen)
+			assert.Equal(p.halfMoveCount, tt.halfMoveCount, "halfmove count not valid")
+			assert.Equal(p.moveCount, tt.moveCount, "move count not valid")
+			assert.Equal(p.enPassanteSq, tt.enpassantSq, "enpassante square not valid")
+			assert.Equal(p.side, tt.turn, "side to move invalid")
+			assert.Equal(p.castlingRights, tt.castlingRights, "castling rights invalid")
 
-	fmt.Println()
+		})
+	}
+
+}
+
+func TestPositionIsAttacked(t *testing.T) {
+	tests := []struct {
+		square     string
+		side       int
+		isAttacked bool
+	}{
+		{"a1", White, false},
+		{"d7", White, true},
+		{"e5", Black, false},
+		{"g2", Black, true},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			p := NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+			square, _ := moves.AlgebriacToIndex(tt.square)
+			assert.Equal(t, p.IsSquareAttackedBy(square, tt.side), tt.isAttacked, "")
+
+		})
+	}
 
 }
