@@ -3,12 +3,10 @@ package moves
 import (
 	"fmt"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMoveEncodingAndDecoding(t *testing.T) {
-	assert := assert.New(t)
+
 	tests := []encodeMoveOpt{
 		{
 			origin:      30,
@@ -30,17 +28,34 @@ func TestMoveEncodingAndDecoding(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("origin:%v dest: %v", tt.origin, tt.dest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("move with origin %v dest: %v", tt.origin, tt.dest), func(t *testing.T) {
 
 			move := encodeMove(tt)
 
-			assert.Equal(move.Origin(), tt.origin, "move origin  not valid")
-			assert.Equal(move.Dest(), tt.dest, "move dest  not valid")
-			assert.Equal(move.Piece(), tt.attackPiece, "move piece  not valid")
-			assert.Equal(move.IsCastling(), tt.isCapture, "move castling  not valid")
-			assert.Equal(move.IsCapture(), tt.isCastling, "move capture  not valid")
-			assert.Equal(move.Enpassant(), tt.enpassant, "move enpassant  not valid")
-			assert.Equal(move.PromotedPiece(), tt.promotedPiece, "move enpassant  not valid")
+			if move.Origin() != tt.origin {
+				t.Errorf("incorrect result: expected %v, got %v", tt.origin, move.Origin())
+			}
+			if move.Dest() != tt.dest {
+				t.Errorf("incorrect result: expected %v, got %v", tt.dest, move.Dest())
+			}
+			if move.Piece() != tt.attackPiece {
+				t.Errorf("incorrect attack piece : expected %v, got %v", tt.attackPiece, move.Piece())
+			}
+
+			if move.PromotedPiece() != tt.promotedPiece {
+				t.Errorf("incorrect promoted piece: expected %v, got %v", tt.promotedPiece, move.PromotedPiece())
+			}
+
+			if move.IsCapture() != tt.isCapture {
+				t.Errorf("incorrect capture status: expected %v, got %v", tt.isCapture, move.IsCapture())
+			}
+			if move.IsCastling() != tt.isCastling {
+				t.Errorf("incorrect castle status: expected %v, got %v", tt.isCastling, move.IsCastling())
+			}
+			if move.Enpassant() != tt.enpassant {
+				t.Errorf("incorrect enpassant status: expected %v, got %v", tt.enpassant, move.Enpassant())
+			}
+
 		})
 	}
 

@@ -46,7 +46,7 @@ const (
 type Move uint64
 
 func boolToInt(bflag bool) int {
-	fmt.Printf("%T\n", bflag)
+
 	if bflag {
 		return 1
 	} else {
