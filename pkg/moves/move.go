@@ -92,6 +92,10 @@ func (mv Move) Enpassant() bool {
 	return mv&enpassantflagMask != 0
 }
 
+func (mv Move) IsPromotion() bool {
+	return mv.PromotedPiece() != 0
+}
+
 func AlgebriacToIndex(algebraic string) (int, error) {
 	if algebraic == "-" {
 		return 64, nil
@@ -123,4 +127,33 @@ func AlgebriacToIndex(algebraic string) (int, error) {
 	rank = ((7 - row) * 8)
 	square = file + rank
 	return square, nil
+}
+
+func IndexToAlgebraic(index int) string {
+
+	var algebraic string
+	file := index % 8
+
+	rank := (8 - (index / 8))
+	switch file {
+	case 0:
+		algebraic = "a"
+	case 1:
+		algebraic = "b"
+	case 2:
+		algebraic = "c"
+	case 3:
+		algebraic = "d"
+	case 4:
+		algebraic = "e"
+	case 5:
+		algebraic = "f"
+	case 6:
+		algebraic = "g"
+	case 7:
+		algebraic = "h"
+	}
+	algebraic += strconv.Itoa(rank)
+	return algebraic
+
 }

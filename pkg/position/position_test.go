@@ -1,8 +1,11 @@
 package position
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/igwedaniel/dolly/pkg/attacks"
+	"github.com/igwedaniel/dolly/pkg/bitboard"
 	"github.com/igwedaniel/dolly/pkg/moves"
 )
 
@@ -75,4 +78,32 @@ func TestPositionIsAttacked(t *testing.T) {
 		})
 	}
 
+}
+
+func TestMoveGeneration(t *testing.T) {
+	// rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1
+	// p := NewFenPosition("8/8/8/2p1pP2/1P1P4/8/8/8 w KQkq e6 0 1")
+	p := NewFenPosition("rnbqkbnr/pppp1p1p/8/4p2P/4PPp1/8/PPPP2P1/RNBQKBNR b KQkq f3 0 4")
+	// p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
+	// p := NewFenPosition("8/8/8/2p1pP2/1P1P4/8/8/8 w KQkq e6 0 1")
+	// p := NewFenPosition("8/8/8/2p5/1P1P4/8/8/8 b KQkq e6 0 1")
+	p.GenerateMoves()
+
+	p.Print()
+	esq, _ := moves.AlgebriacToIndex("f3")
+	frsq, _ := moves.AlgebriacToIndex("g4")
+	fmt.Println("f3", esq)
+	fmt.Println("g4", frsq)
+	bitboard.New(frsq).Print()
+	fmt.Println("position enpssant", p.enPassanteSq)
+	// testSq, _ := moves.AlgebriacToIndex("a1")
+	// fmt.Println(moves.IndexToAlgebraic(esq))
+	// fmt.Println(moves.IndexToAlgebraic(frsq))
+
+	eattks := bitboard.New(esq) & attacks.Pawns[p.side][frsq]
+	eattks.Print()
+	fmt.Println(eattks.LsbIdx())
+	// bitboard.New(testSq).Print()
+	// bitboard.New(esq).Print()
+	// bitboard.New(frsq).Print()
 }

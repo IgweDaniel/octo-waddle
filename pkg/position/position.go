@@ -16,7 +16,12 @@ const (
 	White int = iota
 	Black
 )
-
+const (
+	rank1 = bitboard.Bitboard(0x00000000000000FF)
+	rank4 = bitboard.Bitboard(0x00000000FF000000)
+	rank5 = bitboard.Bitboard(0x000000FF00000000)
+	rank8 = bitboard.Bitboard(0xFF00000000000000)
+)
 const (
 	OccupancySq = iota
 	King
@@ -171,46 +176,6 @@ func (p *Position) setOccupancy(color int) {
 			p.bitboards[color][Queen])
 }
 
-func (p *Position) Print() {
-	chess_gyphicons := [2][]string{}
-	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
-	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
-	p.getOccupancy().Print()
-
-	for sq := 0; sq < 64; sq++ {
-		var colorIdx, piece int
-		if ((sq) % 8) == 0 {
-			fmt.Printf("%v ", (sq/8)+1)
-		}
-		for i := range p.bitboards {
-			for idx, bitboard := range p.bitboards[i] {
-				if bitboard.BitIsSet(sq) {
-					piece = idx
-					colorIdx = i
-				}
-			}
-		}
-
-		if piece == 0 {
-			fmt.Print(" . ")
-		} else {
-			fmt.Printf(" %s ", chess_gyphicons[colorIdx][piece])
-
-		}
-
-		if ((sq + 1) % 8) == 0 {
-
-			fmt.Println("")
-
-		}
-	}
-	fmt.Println("   a  b  c  d  e  f  g  h ")
-	fmt.Println("castling rights", p.castlingRights)
-	fmt.Println("enpassantSquare", p.enPassanteSq)
-	fmt.Println("")
-
-}
-
 func (p *Position) getOccupancy() bitboard.Bitboard {
 	return p.bitboards[White][OccupancySq] | p.bitboards[Black][OccupancySq]
 }
@@ -319,4 +284,44 @@ func (p *Position) IsSquareAttackedBy(square, side int) bool {
 	kingAttacks := attacks.Kings[square] & p.bitboards[side][King]
 
 	return !kingAttacks.IsEmpty()
+}
+
+func (p *Position) Print() {
+	chess_gyphicons := [2][]string{}
+	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
+	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
+
+	for sq := 0; sq < 64; sq++ {
+		var colorIdx, piece int
+		if ((sq) % 8) == 0 {
+			fmt.Printf("%v ", 8-(sq/8))
+		}
+		for i := range p.bitboards {
+			for idx, bitboard := range p.bitboards[i] {
+				if bitboard.BitIsSet(sq) {
+					piece = idx
+					colorIdx = i
+				}
+			}
+		}
+
+		if piece == 0 {
+			fmt.Print(" . ")
+		} else {
+			fmt.Printf(" %s ", chess_gyphicons[colorIdx][piece])
+
+		}
+
+		if ((sq + 1) % 8) == 0 {
+
+			fmt.Println("")
+
+		}
+	}
+	fmt.Println("   a  b  c  d  e  f  g  h ")
+	p.getOccupancy().Print()
+	fmt.Println("castling rights", p.castlingRights)
+	fmt.Println("enpassantSquare", p.enPassanteSq)
+	fmt.Println("")
+
 }

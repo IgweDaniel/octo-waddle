@@ -5,10 +5,6 @@ import (
 )
 
 const (
-	rank1 = bitboard.Bitboard(0x00000000000000FF)
-	rank4 = bitboard.Bitboard(0x00000000FF000000)
-	rank5 = bitboard.Bitboard(0x000000FF00000000)
-	rank8 = bitboard.Bitboard(0xFF00000000000000)
 	fileA = bitboard.Bitboard(0x0101010101010101)
 	fileB = bitboard.Bitboard(0x0202020202020202)
 	fileG = bitboard.Bitboard(0x4040404040404040)
