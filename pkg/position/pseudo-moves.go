@@ -9,13 +9,19 @@ import (
 func (p *Position) GenerateMoves() moves.MoveList {
 
 	moves := moves.NewList()
-	generatePawnAttacks(p, &moves)
+
 	generatePawnPushes(p, &moves)
+	generatePawnCaptures(p, &moves)
+	generateKnightMoves(p, &moves)
+	generateBishopMoves(p, &moves)
+	generateRookMoves(p, &moves)
+	generateQueenMoves(p, &moves)
 	moves.Print()
+
 	return moves
 }
 
-func generatePawnAttacks(p *Position, moves *moves.MoveList) {
+func generatePawnCaptures(p *Position, moves *moves.MoveList) {
 	side := p.side
 	pawns := p.bitboards[side][Pawn]
 
@@ -77,5 +83,87 @@ func generatePawnPushes(p *Position, moves *moves.MoveList) {
 		}
 
 	}
+
+}
+
+func generateKnightMoves(p *Position, moves *moves.MoveList) {
+	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
+	for knights := p.bitboards[p.side][Knight]; !knights.IsEmpty(); {
+
+		origin := knights.LsbIdx()
+		knights.RemoveBit(origin)
+
+		for attacks := attacks.Knights[origin] & ^activeSideOccupancy; !attacks.IsEmpty(); {
+			dest := attacks.LsbIdx()
+			attacks.RemoveBit(dest)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				moves.AddCapture(Knight, origin, dest)
+			} else {
+				moves.Add(Knight, origin, dest)
+			}
+		}
+
+	}
+}
+
+func generateBishopMoves(p *Position, moves *moves.MoveList) {
+	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
+	for bishops := p.bitboards[p.side][Bishop]; !bishops.IsEmpty(); {
+
+		origin := bishops.LsbIdx()
+		bishops.RemoveBit(origin)
+
+		for attacks := p.getBishopAttacks(origin) & ^activeSideOccupancy; !attacks.IsEmpty(); {
+			dest := attacks.LsbIdx()
+			attacks.RemoveBit(dest)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				moves.AddCapture(Bishop, origin, dest)
+			} else {
+				moves.Add(Bishop, origin, dest)
+			}
+		}
+
+	}
+}
+func generateRookMoves(p *Position, moves *moves.MoveList) {
+	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
+	for rooks := p.bitboards[p.side][Rook]; !rooks.IsEmpty(); {
+
+		origin := rooks.LsbIdx()
+		rooks.RemoveBit(origin)
+
+		for attacks := p.getRookAttacks(origin) & ^activeSideOccupancy; !attacks.IsEmpty(); {
+			dest := attacks.LsbIdx()
+			attacks.RemoveBit(dest)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				moves.AddCapture(Rook, origin, dest)
+			} else {
+				moves.Add(Rook, origin, dest)
+			}
+		}
+
+	}
+}
+func generateQueenMoves(p *Position, moves *moves.MoveList) {
+	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
+	for queens := p.bitboards[p.side][Queen]; !queens.IsEmpty(); {
+
+		origin := queens.LsbIdx()
+		queens.RemoveBit(origin)
+
+		for attacks := p.getQueenAttacks(origin) & ^activeSideOccupancy; !attacks.IsEmpty(); {
+			dest := attacks.LsbIdx()
+			attacks.RemoveBit(dest)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				moves.AddCapture(Queen, origin, dest)
+			} else {
+				moves.Add(Queen, origin, dest)
+			}
+		}
+
+	}
+}
+
+func generateKingMoves(p *Position, moves *moves.MoveList) {
 
 }
