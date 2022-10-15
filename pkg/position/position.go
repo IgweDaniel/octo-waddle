@@ -42,8 +42,6 @@ const (
 	BlackQueenside = 8
 )
 
-//
-
 type Position struct {
 	bitboards      [2][]bitboard.Bitboard
 	castlingRights int
@@ -74,7 +72,9 @@ func tokenizeFenString(fen string) (string, int, int, int, int, int) {
 	}
 
 	castling := fenTokens[2]
+
 	for i := 0; i < len(castling); i++ {
+
 		char := string(castling[i])
 		switch char {
 		case "K":
@@ -88,6 +88,7 @@ func tokenizeFenString(fen string) (string, int, int, int, int, int) {
 		case "-":
 		}
 	}
+
 	switch fenTokens[1] {
 	case "w":
 		side = White
@@ -329,7 +330,33 @@ func (p *Position) Print() {
 	fmt.Println("   a  b  c  d  e  f  g  h ")
 	p.getOccupancy().Print()
 	fmt.Printf("%s to move\n", colorMap[p.side])
-	fmt.Println("castling rights", p.castlingRights)
+	// castlingRights&kingSideCastle != 0
+	/*
+		7=>KQk
+		11>KQq
+		13=>Kkq
+		14=>Qkq
+		12=>kq
+		3=>KQ
+		15=>KQkq
+	*/
+	//
+	castleMap := map[int]string{
+		7:  "Wks Wqs Bks",
+		11: "Wks Wqs Bqs",
+		13: "Wks Bks Bqs",
+		14: "Wqs Bks Bqs",
+		12: "Bks Bqs",
+		3:  "Wks Wqs",
+		15: "Wks Wqs Bks Bqs",
+		4:  "only Bks",
+		8:  "only Bqs",
+		2:  "only Wqs",
+		1:  "only Wks",
+		// 6:""
+	}
+
+	fmt.Println("castling rights", p.castlingRights, castleMap[p.castlingRights])
 	fmt.Println("enpassantSquare", moves.IndexToAlgebraic(p.enPassanteSq))
 	fmt.Println("")
 
@@ -359,7 +386,6 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 
 		if move.Enpassant() {
-			fmt.Println("enpass move")
 			if p.side == Black {
 				capturePieceBb.RemoveBit(dest - 8)
 			} else {
@@ -368,7 +394,13 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 
 		if capturePiece == Rook {
-			fmt.Println("castling and rights ignored")
+
+			if (dest % 8) == 7 {
+				p.revokeKingSideCastle(p.side ^ 1)
+			} else if (dest % 8) == 0 {
+				p.revokeQueenSideCastle(p.side ^ 1)
+			}
+
 		}
 
 	}
@@ -389,11 +421,52 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 	}
 
+	if !move.IsCastling() && piece == King {
+		p.revokeKingSideCastle(p.side)
+		p.revokeQueenSideCastle(p.side)
+	}
+
+	if !move.IsCastling() && piece == Rook {
+		if origin == 7 || origin == 63 {
+			p.revokeKingSideCastle(p.side)
+		} else if origin == 0 || origin == 56 {
+			p.revokeQueenSideCastle(p.side)
+		}
+	}
+
 	if move.IsCastling() {
-		fmt.Println("castling move and rights ignored")
+		fmt.Println("castling")
+		if dest == 2 || dest == 58 {
+			p.bitboards[p.side][Rook].SetBit(dest + 1)
+			p.bitboards[p.side][Rook].RemoveBit(dest - 2)
+
+		} else if dest == 6 || dest == 62 {
+
+			p.bitboards[p.side][Rook].SetBit(dest - 1)
+			p.bitboards[p.side][Rook].RemoveBit(dest + 1)
+		}
+		p.revokeKingSideCastle(p.side)
+		p.revokeQueenSideCastle(p.side)
+
 	}
 	p.setOccupancy(Black)
 	p.setOccupancy(White)
 	p.side ^= 1
 
+}
+
+func (p *Position) revokeKingSideCastle(revokefor int) {
+	if revokefor == Black {
+		p.castlingRights &= (WhiteKingside | WhiteQueenside | BlackQueenside)
+	} else {
+		p.castlingRights &= (BlackKingside | WhiteQueenside | BlackQueenside)
+	}
+}
+
+func (p *Position) revokeQueenSideCastle(revokefor int) {
+	if revokefor == Black {
+		p.castlingRights &= (BlackKingside | WhiteKingside | WhiteQueenside)
+	} else {
+		p.castlingRights &= (BlackKingside | WhiteKingside | BlackQueenside)
+	}
 }

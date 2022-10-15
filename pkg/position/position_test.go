@@ -17,9 +17,9 @@ func TestPositionParseFen(t *testing.T) {
 		castlingRights int
 		enPassanteSq   int
 	}{
-		{"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 0, 1, White, 15, 64},
-		{"rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1", 0, 1, White, 15, 64},
-		{"rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1", 0, 1, White, 15, 20},
+		// {"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 0, 1, White, 15, 64},
+		// {"rnbqkbnr/pppppppp/8/4R3/8/8/PPPPPPPP/1NBQKBNR w KQkq - 0 1", 0, 1, White, 15, 64},
+		// {"rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1", 0, 1, White, 15, 20},
 		{"rnbqkbnr/pp5p/2pppp2/6p1/2B1P3/2N2P1N/PPPP2PP/R1BQK1R1 b Qkq - 1 6", 1, 6, Black, 14, 64},
 	}
 
@@ -41,7 +41,7 @@ func TestPositionParseFen(t *testing.T) {
 				t.Errorf("incorrect side to move: expected %v, got %v", colorMap[tt.turn], colorMap[p.side])
 			}
 			if p.castlingRights != tt.castlingRights {
-				t.Errorf("incorrect side to move: expected %v, got %v", tt.castlingRights, p.castlingRights)
+				t.Errorf("incorrect castlings to move: expected %v, got %v", tt.castlingRights, p.castlingRights)
 			}
 
 		})
@@ -80,12 +80,11 @@ func TestMoveGeneration(t *testing.T) {
 
 	// p := NewFenPosition("8/8/8/2p1pP2/1P1P4/8/8/8 w KQkq e6 0 1")
 
-	/* // tricky position
+	// tricky position
 	p := NewFenPosition("rnbqkbnr/pppp1p1p/8/4p2P/4PPp1/8/PPPP2P1/RNBQKBNR b KQkq f3 0 4")
-	*/
 
 	// killer position
-	p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
+	// p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
 
 	/* // Knight position
 	p := NewFenPosition("rnbqkb1r/ppppppp1/5n2/7p/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 1 3")
@@ -97,14 +96,23 @@ func TestMoveGeneration(t *testing.T) {
 	// start position
 	// p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-	/* // castle position
-	p = NewFenPosition("4k2r/p1pp1pb1/1n2pnp1/3PN1q1/1p2PQ2/1PNb3P/PrPB1P1P/R3K2R w KQk - 1 4")
-	*/
+	// castle position
+	// p = NewFenPosition("4k2r/p1pp1pb1/1n2pnp1/3PN1q1/1p2PQ2/1PNb3P/PrPB1P1P/R3K2R w KQk - 1 4")
+
+	// castle chop position and move
+	p = NewFenPosition("rnb1kb1r/pB1p2Qp/1p3p2/4p3/3PP3/2N1BNn1/qPP2PPP/R3K2R w KQkq - 0 1")
+
 	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
 	fmt.Println("old Pos")
 	p.Print()
 	moves := p.GenerateMoves()
-	validMove, err := findMove(moves, "a2", "a4")
+	// move white kingside
+	// validMove, err := findMove(moves, "e1", "c1")
+	// validMove, err := findMove(moves, "e8", "g8")
+
+	// chop move
+	// validMove, err := findMove(moves, "b7", "a8")
+	validMove, err := findMove(moves, "e1", "f1")
 	if err != nil {
 		moves.Print()
 		fmt.Println("move invalid")
@@ -112,19 +120,7 @@ func TestMoveGeneration(t *testing.T) {
 	p.MakeMove(validMove)
 	fmt.Println("nEw Pos")
 	p.Print()
-	// newmoves := p.GenerateMoves()
-	// newmoves.Print()
 
-	// fmt.Println("clear path")
-	// pos := 60
-	// BlackkingSideClear := bitboard.NewMask(0)
-	// BlackkingSideClear.SetBit(pos - 1)
-	// BlackkingSideClear.SetBit(pos - 2)
-	// BlackkingSideClear.SetBit(pos - 3)
-	// BlackkingSideClear.Print()
-	// fmt.Printf("hex %x", BlackkingSideClear)
-	// // bitboard.NewMask(0x6000000000000001).Print()
-	// bitboard.New(pos).Print()
 }
 
 func findMove(movelist moves.MoveList, from, to string) (moves.Move, error) {
