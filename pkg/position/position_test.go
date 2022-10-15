@@ -1,6 +1,7 @@
 package position
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/igwedaniel/dolly/pkg/moves"
@@ -100,8 +101,20 @@ func TestMoveGeneration(t *testing.T) {
 	p = NewFenPosition("4k2r/p1pp1pb1/1n2pnp1/3PN1q1/1p2PQ2/1PNb3P/PrPB1P1P/R3K2R w KQk - 1 4")
 	*/
 	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
-	p.GenerateMoves()
+	fmt.Println("old Pos")
 	p.Print()
+	moves := p.GenerateMoves()
+	validMove, err := findMove(moves, "a2", "a4")
+	if err != nil {
+		moves.Print()
+		fmt.Println("move invalid")
+	}
+	p.MakeMove(validMove)
+	fmt.Println("nEw Pos")
+	p.Print()
+	// newmoves := p.GenerateMoves()
+	// newmoves.Print()
+
 	// fmt.Println("clear path")
 	// pos := 60
 	// BlackkingSideClear := bitboard.NewMask(0)
@@ -112,4 +125,19 @@ func TestMoveGeneration(t *testing.T) {
 	// fmt.Printf("hex %x", BlackkingSideClear)
 	// // bitboard.NewMask(0x6000000000000001).Print()
 	// bitboard.New(pos).Print()
+}
+
+func findMove(movelist moves.MoveList, from, to string) (moves.Move, error) {
+	var movehit moves.Move
+	origin, _ := moves.AlgebriacToIndex(from)
+	dest, _ := moves.AlgebriacToIndex(to)
+	for _, move := range movelist {
+		// origin, dest := move.Origin(), move.Dest()
+
+		if move.Origin() == origin && move.Dest() == dest {
+			return move, nil
+		}
+
+	}
+	return movehit, fmt.Errorf("invalid move")
 }

@@ -132,6 +132,9 @@ func AlgebriacToIndex(algebraic string) (int, error) {
 func IndexToAlgebraic(index int) string {
 
 	var algebraic string
+	if index < 0 || index >= 64 {
+		return "-"
+	}
 	file := index % 8
 
 	rank := (8 - (index / 8))

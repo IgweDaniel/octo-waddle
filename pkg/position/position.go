@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 
@@ -40,6 +41,8 @@ const (
 	BlackKingside  = 4
 	BlackQueenside = 8
 )
+
+//
 
 type Position struct {
 	bitboards      [2][]bitboard.Bitboard
@@ -327,7 +330,70 @@ func (p *Position) Print() {
 	p.getOccupancy().Print()
 	fmt.Printf("%s to move\n", colorMap[p.side])
 	fmt.Println("castling rights", p.castlingRights)
-	fmt.Println("enpassantSquare", p.enPassanteSq)
+	fmt.Println("enpassantSquare", moves.IndexToAlgebraic(p.enPassanteSq))
 	fmt.Println("")
+
+}
+
+func (p *Position) MakeMove(move moves.Move) {
+
+	origin, dest := move.Origin(), move.Dest()
+
+	piece, promotedPiece := move.Piece(), move.PromotedPiece()
+	pieceBb := &p.bitboards[p.side][piece]
+	isDoublePawnPush := piece == Pawn && math.Abs(float64(dest-origin)) == 16
+
+	pieceBb.RemoveBit(origin)
+	pieceBb.SetBit(dest)
+
+	if move.IsCapture() {
+		var capturePiece int
+		var capturePieceBb *bitboard.Bitboard
+
+		for capturePiece = 0; capturePiece < len(p.bitboards[p.side^1]); capturePiece++ {
+			capturePieceBb = &p.bitboards[p.side^1][capturePiece]
+			if capturePiece != OccupancySq && capturePieceBb.BitIsSet(dest) {
+				capturePieceBb.RemoveBit(dest)
+				break
+			}
+		}
+
+		if move.Enpassant() {
+			fmt.Println("enpass move")
+			if p.side == Black {
+				capturePieceBb.RemoveBit(dest - 8)
+			} else {
+				capturePieceBb.RemoveBit(dest + 8)
+			}
+		}
+
+		if capturePiece == Rook {
+			fmt.Println("castling and rights ignored")
+		}
+
+	}
+	if move.IsPromotion() {
+		/*
+			since we've already updated its new
+			location at the beginnig of the function, this undos it
+		*/
+		pieceBb.RemoveBit(dest)
+		p.bitboards[p.side][promotedPiece].SetBit(dest)
+	}
+
+	p.enPassanteSq = 64
+	if isDoublePawnPush {
+		p.enPassanteSq = dest + 8
+		if p.side == Black {
+			p.enPassanteSq = dest - 8
+		}
+	}
+
+	if move.IsCastling() {
+		fmt.Println("castling move and rights ignored")
+	}
+	p.setOccupancy(Black)
+	p.setOccupancy(White)
+	p.side ^= 1
 
 }

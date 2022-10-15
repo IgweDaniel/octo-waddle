@@ -19,8 +19,6 @@ func (p *Position) GenerateMoves() moves.MoveList {
 	generateKingMoves(p, &moves)
 	generateKingCastleMoves(p, &moves)
 
-	moves.Print()
-
 	return moves
 }
 
@@ -62,10 +60,11 @@ func generatePawnPushes(p *Position, moves *moves.MoveList) {
 
 	var step, direction = 8, -1
 	var pawnStartRanks = bitboard.NewMask(uint64(rank2))
-
+	var promoteRank = bitboard.NewMask(uint64(rank8))
 	if p.side == Black {
 		direction = 1
 		pawnStartRanks = bitboard.NewMask(uint64(rank7))
+		promoteRank = bitboard.NewMask(uint64(rank1))
 	}
 
 	pawns := p.bitboards[p.side][Pawn]
@@ -81,7 +80,15 @@ func generatePawnPushes(p *Position, moves *moves.MoveList) {
 				dblPushDest := origin + 2*step*direction
 				moves.Add(Pawn, origin, dblPushDest)
 			}
-			moves.Add(Pawn, origin, dest)
+
+			if promoteRank.BitIsSet(dest) {
+				moves.AddPromotion(Pawn, origin, dest, Queen, false)
+				moves.AddPromotion(Pawn, origin, dest, Rook, false)
+				moves.AddPromotion(Pawn, origin, dest, Bishop, false)
+				moves.AddPromotion(Pawn, origin, dest, Knight, false)
+			} else {
+				moves.Add(Pawn, origin, dest)
+			}
 
 		}
 
