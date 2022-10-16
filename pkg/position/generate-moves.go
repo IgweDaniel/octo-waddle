@@ -6,7 +6,7 @@ import (
 	"github.com/igwedaniel/dolly/pkg/moves"
 )
 
-func (p *Position) GenerateMoves() moves.MoveList {
+func (p *Position) GenerateMoves() moves.Moves {
 
 	moves := moves.NewList()
 
@@ -22,7 +22,7 @@ func (p *Position) GenerateMoves() moves.MoveList {
 	return moves
 }
 
-func generatePawnCaptures(p *Position, moves *moves.MoveList) {
+func generatePawnCaptures(p *Position, moves *moves.Moves) {
 	side := p.side
 	pawns := p.bitboards[side][Pawn]
 
@@ -56,7 +56,7 @@ func generatePawnCaptures(p *Position, moves *moves.MoveList) {
 	}
 }
 
-func generatePawnPushes(p *Position, moves *moves.MoveList) {
+func generatePawnPushes(p *Position, moves *moves.Moves) {
 
 	var step, direction = 8, -1
 	var pawnStartRanks = bitboard.NewMask(uint64(rank2))
@@ -96,7 +96,7 @@ func generatePawnPushes(p *Position, moves *moves.MoveList) {
 
 }
 
-func generateKnightMoves(p *Position, moves *moves.MoveList) {
+func generateKnightMoves(p *Position, moves *moves.Moves) {
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for knights := p.bitboards[p.side][Knight]; !knights.IsEmpty(); {
 
@@ -116,7 +116,7 @@ func generateKnightMoves(p *Position, moves *moves.MoveList) {
 	}
 }
 
-func generateBishopMoves(p *Position, moves *moves.MoveList) {
+func generateBishopMoves(p *Position, moves *moves.Moves) {
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for bishops := p.bitboards[p.side][Bishop]; !bishops.IsEmpty(); {
 
@@ -135,7 +135,7 @@ func generateBishopMoves(p *Position, moves *moves.MoveList) {
 
 	}
 }
-func generateRookMoves(p *Position, moves *moves.MoveList) {
+func generateRookMoves(p *Position, moves *moves.Moves) {
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for rooks := p.bitboards[p.side][Rook]; !rooks.IsEmpty(); {
 
@@ -154,7 +154,7 @@ func generateRookMoves(p *Position, moves *moves.MoveList) {
 
 	}
 }
-func generateQueenMoves(p *Position, moves *moves.MoveList) {
+func generateQueenMoves(p *Position, moves *moves.Moves) {
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for queens := p.bitboards[p.side][Queen]; !queens.IsEmpty(); {
 
@@ -174,7 +174,7 @@ func generateQueenMoves(p *Position, moves *moves.MoveList) {
 	}
 }
 
-func generateKingMoves(p *Position, moves *moves.MoveList) {
+func generateKingMoves(p *Position, moves *moves.Moves) {
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for king := p.bitboards[p.side][King]; !king.IsEmpty(); {
 
@@ -193,7 +193,7 @@ func generateKingMoves(p *Position, moves *moves.MoveList) {
 
 	}
 }
-func generateKingCastleMoves(p *Position, moves *moves.MoveList) {
+func generateKingCastleMoves(p *Position, moves *moves.Moves) {
 	occupancy := p.getOccupancy()
 	var kingSideCastle, queenSideCastle, posIdx = WhiteKingside, WhiteQueenside, 60
 	kingsidePathMask := bitboard.NewMask(0x6000000000000000)

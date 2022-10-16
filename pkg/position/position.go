@@ -49,6 +49,7 @@ type Position struct {
 	enPassanteSq   int
 	moveCount      int
 	halfMoveCount  int
+	prevPosition   *Position
 }
 
 func tokenizeFenString(fen string) (string, int, int, int, int, int) {
@@ -114,6 +115,18 @@ func NewFenPosition(fen string) *Position {
 	p.castlingRights = castlingRights
 	p.enPassanteSq = enPassanteSq
 	return p
+}
+
+func (p *Position) copy() *Position {
+	pCopied := *p
+
+	pCopied.bitboards[0] = make([]bitboard.Bitboard, len(p.bitboards[0]))
+	pCopied.bitboards[1] = make([]bitboard.Bitboard, len(p.bitboards[1]))
+
+	copy(pCopied.bitboards[0], p.bitboards[0])
+	copy(pCopied.bitboards[1], p.bitboards[1])
+
+	return &pCopied
 }
 
 func (p *Position) setBitboardsFromFen(fenPosition string) {
@@ -296,6 +309,19 @@ func (p *Position) IsSquareAttackedBy(square, side int) bool {
 var colorMap = map[int]string{White: "white", Black: "Black"}
 
 func (p *Position) Print() {
+	var castleMap = map[int]string{
+		7:  "Wks Wqs Bks",
+		11: "Wks Wqs Bqs",
+		13: "Wks Bks Bqs",
+		14: "Wqs Bks Bqs",
+		12: "Bks Bqs",
+		3:  "Wks Wqs",
+		15: "Wks Wqs Bks Bqs",
+		4:  "only Bks",
+		8:  "only Bqs",
+		2:  "only Wqs",
+		1:  "only Wks",
+	}
 	chess_gyphicons := [2][]string{}
 	chess_gyphicons[White] = strings.Split(",♚,♛,♝,♞,♜,♟︎", ",")
 	chess_gyphicons[Black] = strings.Split(",♔,♕,♗,♘,♖,♙", ",")
@@ -328,9 +354,9 @@ func (p *Position) Print() {
 		}
 	}
 	fmt.Println("   a  b  c  d  e  f  g  h ")
-	p.getOccupancy().Print()
+	// p.getOccupancy().Print()
 	fmt.Printf("%s to move\n", colorMap[p.side])
-	// castlingRights&kingSideCastle != 0
+
 	/*
 		7=>KQk
 		11>KQq
@@ -340,21 +366,6 @@ func (p *Position) Print() {
 		3=>KQ
 		15=>KQkq
 	*/
-	//
-	castleMap := map[int]string{
-		7:  "Wks Wqs Bks",
-		11: "Wks Wqs Bqs",
-		13: "Wks Bks Bqs",
-		14: "Wqs Bks Bqs",
-		12: "Bks Bqs",
-		3:  "Wks Wqs",
-		15: "Wks Wqs Bks Bqs",
-		4:  "only Bks",
-		8:  "only Bqs",
-		2:  "only Wqs",
-		1:  "only Wks",
-		// 6:""
-	}
 
 	fmt.Println("castling rights", p.castlingRights, castleMap[p.castlingRights])
 	fmt.Println("enpassantSquare", moves.IndexToAlgebraic(p.enPassanteSq))
@@ -363,6 +374,8 @@ func (p *Position) Print() {
 }
 
 func (p *Position) MakeMove(move moves.Move) {
+	// Copy position before any alterations
+	prevPos := p.copy()
 
 	origin, dest := move.Origin(), move.Dest()
 
@@ -452,6 +465,20 @@ func (p *Position) MakeMove(move moves.Move) {
 	p.setOccupancy(Black)
 	p.setOccupancy(White)
 	p.side ^= 1
+	p.prevPosition = prevPos
+}
+
+func (p *Position) UnMakeMove() {
+	prevPos := p.prevPosition
+	if prevPos != nil {
+		p.bitboards[0] = make([]bitboard.Bitboard, len(prevPos.bitboards[0]))
+		p.bitboards[1] = make([]bitboard.Bitboard, len(prevPos.bitboards[1]))
+
+		copy(p.bitboards[0], prevPos.bitboards[0])
+		copy(p.bitboards[1], prevPos.bitboards[1])
+
+		*p = *prevPos
+	}
 
 }
 

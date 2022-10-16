@@ -2,13 +2,13 @@ package moves
 
 import "fmt"
 
-type MoveList []Move
+type Moves []Move
 
-func NewList() MoveList {
+func NewList() Moves {
 	return make([]Move, 0, 100)
 }
 
-func (m *MoveList) Add(piece, origin, dest int) {
+func (m *Moves) Add(piece, origin, dest int) {
 	*m = append(*m, encodeMove(encodeMoveOpt{
 		origin:      origin,
 		dest:        dest,
@@ -16,7 +16,7 @@ func (m *MoveList) Add(piece, origin, dest int) {
 	}))
 }
 
-func (m *MoveList) AddEnpassantCapture(piece, origin, dest int) {
+func (m *Moves) AddEnpassantCapture(piece, origin, dest int) {
 	*m = append(*m, encodeMove(encodeMoveOpt{
 		origin:      origin,
 		dest:        dest,
@@ -26,7 +26,7 @@ func (m *MoveList) AddEnpassantCapture(piece, origin, dest int) {
 	}))
 }
 
-func (m *MoveList) AddCapture(piece, origin, dest int) {
+func (m *Moves) AddCapture(piece, origin, dest int) {
 	*m = append(*m, encodeMove(encodeMoveOpt{
 		origin:      origin,
 		dest:        dest,
@@ -35,7 +35,7 @@ func (m *MoveList) AddCapture(piece, origin, dest int) {
 	}))
 }
 
-func (m *MoveList) AddPromotion(piece, origin, dest, promotion int, isCapture bool) {
+func (m *Moves) AddPromotion(piece, origin, dest, promotion int, isCapture bool) {
 	*m = append(*m, encodeMove(encodeMoveOpt{
 		origin:        origin,
 		dest:          dest,
@@ -45,7 +45,7 @@ func (m *MoveList) AddPromotion(piece, origin, dest, promotion int, isCapture bo
 	}))
 
 }
-func (m *MoveList) AddCastling(piece, origin, dest int) {
+func (m *Moves) AddCastling(piece, origin, dest int) {
 	*m = append(*m, encodeMove(encodeMoveOpt{
 		origin:      origin,
 		dest:        dest,
@@ -54,7 +54,7 @@ func (m *MoveList) AddCastling(piece, origin, dest int) {
 	}))
 }
 
-func (m *MoveList) Print() {
+func (m *Moves) Print() {
 	var pieceMaps = map[int]string{1: "King",
 		2: "Queen",
 		3: "Bishop",
