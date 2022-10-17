@@ -117,14 +117,15 @@ func NewFenPosition(fen string) *Position {
 	return p
 }
 
-func (p *Position) copy() *Position {
-	pCopied := *p
-
+func (p Position) copy() *Position {
+	pCopied := p
+	// prevPos := *p.prevPosition
 	pCopied.bitboards[0] = make([]bitboard.Bitboard, len(p.bitboards[0]))
 	pCopied.bitboards[1] = make([]bitboard.Bitboard, len(p.bitboards[1]))
 
 	copy(pCopied.bitboards[0], p.bitboards[0])
 	copy(pCopied.bitboards[1], p.bitboards[1])
+	// *pCopied.prevPosition = prevPos
 
 	return &pCopied
 }
@@ -275,9 +276,28 @@ func (p *Position) getQueenAttacks(square int) bitboard.Bitboard {
 	return p.getRookAttacks(square) | p.getBishopAttacks(square)
 }
 
+/*
+	fenPosition := convertBitboardsToFenString(p.bitboards)
+	activeSideString, _ := p.convertActiveSideToString()
+	castlingRightsString := p.convertCastlingRightsToFenString()
+	enPassanteSqFenString := p.convertEnPassanteSqToFenString()
+	fenPosition += " " + activeSideString +
+		" " + castlingRightsString +
+		" " + enPassanteSqFenString +
+		" " + strconv.Itoa(p.moveCt) +
+		" " + strconv.Itoa(p.halfMoveCt)
+	return fenPosition*/
+// func (p *Position) GetFen() string {
+// 	for i := 0; i < 64; i++ {
+// 		for piece, pieceBB:=range p.bitboards[White]{
+
+//			}
+//		}
+//		return ""
+//	}
 func (p *Position) IsSquareAttackedBy(square, side int) bool {
 
-	pawnAttacks := attacks.Pawns[p.side][square] & p.bitboards[side][Pawn]
+	pawnAttacks := attacks.Pawns[side^1][square] & p.bitboards[side][Pawn]
 
 	if !pawnAttacks.IsEmpty() {
 		return true
@@ -382,9 +402,9 @@ func (p *Position) MakeMove(move moves.Move) {
 	piece, promotedPiece := move.Piece(), move.PromotedPiece()
 	pieceBb := &p.bitboards[p.side][piece]
 	isDoublePawnPush := piece == Pawn && math.Abs(float64(dest-origin)) == 16
-
 	pieceBb.RemoveBit(origin)
 	pieceBb.SetBit(dest)
+	p.enPassanteSq = 64
 
 	if move.IsCapture() {
 		var capturePiece int
@@ -426,7 +446,6 @@ func (p *Position) MakeMove(move moves.Move) {
 		p.bitboards[p.side][promotedPiece].SetBit(dest)
 	}
 
-	p.enPassanteSq = 64
 	if isDoublePawnPush {
 		p.enPassanteSq = dest + 8
 		if p.side == Black {
@@ -470,14 +489,20 @@ func (p *Position) MakeMove(move moves.Move) {
 
 func (p *Position) UnMakeMove() {
 	prevPos := p.prevPosition
+
 	if prevPos != nil {
-		p.bitboards[0] = make([]bitboard.Bitboard, len(prevPos.bitboards[0]))
-		p.bitboards[1] = make([]bitboard.Bitboard, len(prevPos.bitboards[1]))
-
-		copy(p.bitboards[0], prevPos.bitboards[0])
-		copy(p.bitboards[1], prevPos.bitboards[1])
-
 		*p = *prevPos
+		// p.bitboards[0] = make([]bitboard.Bitboard, len(prevPos.bitboards[0]))
+		// p.bitboards[1] = make([]bitboard.Bitboard, len(prevPos.bitboards[1]))
+
+		// copy(p.bitboards[0], prevPos.bitboards[0])
+		// copy(p.bitboards[1], prevPos.bitboards[1])
+
+		// *p = *prevPos
+		// if prevPos.prevPosition != nil {
+		// 	*p.prevPosition = *prevPos.prevPosition
+		// }
+
 	}
 
 }

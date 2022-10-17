@@ -37,9 +37,9 @@ func generatePawnCaptures(p *Position, moves *moves.Moves) {
 			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
 				if promoteRanks.BitIsSet(dest) {
 					moves.AddPromotion(Pawn, origin, dest, Queen, true)
-					// moves.AddPromotion(Pawn, origin, dest, Rook, true)
-					// moves.AddPromotion(Pawn, origin, dest, Bishop, true)
-					// moves.AddPromotion(Pawn, origin, dest, Knight, true)
+					moves.AddPromotion(Pawn, origin, dest, Rook, true)
+					moves.AddPromotion(Pawn, origin, dest, Bishop, true)
+					moves.AddPromotion(Pawn, origin, dest, Knight, true)
 
 				} else {
 					moves.AddCapture(Pawn, origin, dest)
@@ -88,9 +88,9 @@ func generatePawnPushes(p *Position, moves *moves.Moves) {
 
 			if promoteRank.BitIsSet(dest) {
 				moves.AddPromotion(Pawn, origin, dest, Queen, false)
-				// moves.AddPromotion(Pawn, origin, dest, Rook, false)
-				// moves.AddPromotion(Pawn, origin, dest, Bishop, false)
-				// moves.AddPromotion(Pawn, origin, dest, Knight, false)
+				moves.AddPromotion(Pawn, origin, dest, Rook, false)
+				moves.AddPromotion(Pawn, origin, dest, Bishop, false)
+				moves.AddPromotion(Pawn, origin, dest, Knight, false)
 			} else {
 				moves.Add(Pawn, origin, dest)
 			}
@@ -227,5 +227,4 @@ func generateKingCastleMoves(p *Position, moves *moves.Moves) {
 			}
 		}
 	}
-
 }

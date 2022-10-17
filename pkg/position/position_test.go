@@ -50,32 +50,32 @@ func TestPositionParseFen(t *testing.T) {
 
 }
 
-func TestPositionIsAttacked(t *testing.T) {
-	tests := []struct {
-		square     string
-		side       int
-		isAttacked bool
-	}{
-		{"a1", White, false},
-		{"d7", White, true},
-		{"e5", Black, false},
-		{"g2", Black, true},
-	}
+// func TestPositionIsAttacked(t *testing.T) {
+// 	tests := []struct {
+// 		square     string
+// 		side       int
+// 		isAttacked bool
+// 	}{
+// 		{"a1", White, false},
+// 		{"d7", White, true},
+// 		{"e5", Black, false},
+// 		{"g2", Black, true},
+// 	}
 
-	for _, tt := range tests {
-		t.Run("", func(t *testing.T) {
-			p := NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
-			square, _ := moves.AlgebriacToIndex(tt.square)
-			isAttacked := p.IsSquareAttackedBy(square, tt.side)
+// 	for _, tt := range tests {
+// 		t.Run("", func(t *testing.T) {
+// 			p := NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+// 			square, _ := moves.AlgebriacToIndex(tt.square)
+// 			isAttacked := p.IsSquareAttackedBy(square, tt.side)
 
-			if isAttacked != tt.isAttacked {
-				t.Errorf("incorrect attack status for: %s expected %v, got %v", tt.square, tt.isAttacked, isAttacked)
-			}
+// 			if isAttacked != tt.isAttacked {
+// 				t.Errorf("incorrect attack status for: %s expected %v, got %v", tt.square, tt.isAttacked, isAttacked)
+// 			}
 
-		})
-	}
+// 		})
+// 	}
 
-}
+// }
 
 func TestPositionCopy(t *testing.T) {
 	p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")

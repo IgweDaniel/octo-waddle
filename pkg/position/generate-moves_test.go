@@ -38,43 +38,58 @@ func TestMoveGeneration(t *testing.T) {
 	// fen = "r1b1kbr1/pppp3p/5p2/5Nn1/2B5/8/PPPP1P1P/RNBQ1RK1 b Qkq - 0 1"
 	// fen = "rnb1kbnr/pppp1ppp/8/8/4q3/8/PPPPBPPP/RNBQK1NR w KQkq - 0 1"
 	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
-	p = NewFenPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0")
+	p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
 	fmt.Println("old Pos")
-	fmt.Println("prev pos empty", p.prevPosition == nil)
 	p.Print()
+	// fmt.Println(p.prevPosition)
+
+	fmt.Println("======legal moves======")
 	legalmoves := onlyLegalMoves(*p)
 	legalmoves.Print()
-	moves := p.GenerateMoves()
-	// moves.Print()
+	fmt.Println("======legal moves======")
 
+	fmt.Println("======pseudo legal moves======")
+	moves := p.GenerateMoves()
+	moves.Print()
+	fmt.Println("======pseudo legal moves======")
+
+	// fmt.Println(p.prevPosition)
 	// move white kingside
 	// validMove, err := findMove(moves, "e1", "c1")
 	// validMove, err := findMove(moves, "e8", "g8")
 
 	// chop move
 	// validMove, err := findMove(moves, "b7", "a8")
-	validMove, err := findMove(moves, "e1", "d1")
+	validMove, err := findMove(moves, "a5", "b6")
 	// validMove, err := findMove(moves, "e2", "f3")
 
 	if err != nil {
 		fmt.Println("move invalid! Here are avalable moves")
-		moves.Print()
+		// moves.Print()
 	} else {
-		fmt.Println("before")
-		p.getOccupancy().Print()
+		// fmt.Println("before")
+		// p.getOccupancy().Print()
 
 		p.MakeMove(validMove)
-		p.UnMakeMove()
-		fmt.Println("after")
-		p.getOccupancy().Print()
 		kingSqBB := p.bitboards[p.side^1][King]
 		kingSqIdx := kingSqBB.LsbIdx()
-		kingSqBB.Print()
 
-		fmt.Printf("curr side %s opp side %s\n", colorMap[p.side], colorMap[p.side^1])
+		if p.IsSquareAttackedBy(kingSqIdx, p.side) {
+			fmt.Printf("King is grave in danger by attack from %s undoing move \n", colorMap[p.side])
+		}
 
-		fmt.Println(kingSqIdx)
-		fmt.Println("is attacked", p.IsSquareAttackedBy(kingSqIdx, p.side))
+		p.UnMakeMove()
+		p.Print()
+		// fmt.Println("after")
+		// p.getOccupancy().Print()
+		// kingSqBB := p.bitboards[p.side^1][King]
+		// kingSqIdx := kingSqBB.LsbIdx()
+		// kingSqBB.Print()
+
+		// fmt.Printf("curr side %s opp side %s\n", colorMap[p.side], colorMap[p.side^1])
+
+		// fmt.Println(kingSqIdx)
+		// fmt.Println("is attacked", p.IsSquareAttackedBy(kingSqIdx, p.side))
 
 		// if p.IsSquareAttackedBy(kingSqIdx, p.side) {
 		// 	p.UnMakeMove()
@@ -113,6 +128,7 @@ func onlyLegalMoves(p Position) moves.Moves {
 	}
 	legalmoves := moves.NewList()
 
+	// fmt.Println("only legal", &p.prevPosition)
 	for _, move := range p.GenerateMoves() {
 
 		p.MakeMove(move)
@@ -123,7 +139,6 @@ func onlyLegalMoves(p Position) moves.Moves {
 		if !p.IsSquareAttackedBy(kingSqIdx, p.side) {
 			legalmoves = append(legalmoves, move)
 		} else {
-			// if move.
 			fmt.Printf("can't move %s %s at %s to %s\n", colorMap[p.side^1], pieceMaps[move.Piece()], moves.IndexToAlgebraic(move.Origin()), moves.IndexToAlgebraic(move.Dest()))
 		}
 		p.UnMakeMove()
@@ -162,6 +177,33 @@ var captures = 0
 var checks = 0
 var epCap = 0
 var castles = 0
+var prom = 0
+
+// func Perft(position *Position, depth int) int {
+
+// 	nodes := 0
+// 	legalmoves := onlyLegalMoves(*position)
+// 	if depth == 0 {
+// 		return 1
+// 	}
+
+// 	for _, move := range legalmoves {
+// 		if move.Enpassant() {
+// 			epCap += 1
+// 		}
+// 		if move.IsCapture() {
+// 			captures += 1
+// 		}
+// 		if move.IsCastling() {
+// 			castles += 1
+// 		}
+// 		position.MakeMove(move)
+// 		nodes += Perft(position, depth-1)
+// 		position.UnMakeMove()
+
+// 	}
+// 	return nodes
+// }
 
 func Perft(position *Position, depth int) int {
 
@@ -172,20 +214,24 @@ func Perft(position *Position, depth int) int {
 	}
 
 	for _, move := range legalmoves {
-		if move.Enpassant() {
-			epCap += 1
-		}
-		if move.IsCapture() {
-			captures += 1
-		}
-		if move.IsCastling() {
-			castles += 1
-		}
+
 		position.MakeMove(move)
 		kingSqBB := position.bitboards[position.side^1][King]
 		kingSqIdx := kingSqBB.LsbIdx()
 
 		if !position.IsSquareAttackedBy(kingSqIdx, position.side) {
+			if move.Enpassant() {
+				epCap += 1
+			}
+			if move.IsCapture() {
+				captures += 1
+			}
+			if move.IsCastling() {
+				castles += 1
+			}
+			if move.IsPromotion() {
+				prom += 1
+			}
 			nodes += Perft(position, depth-1)
 		} else {
 			checks += 1
@@ -196,20 +242,26 @@ func Perft(position *Position, depth int) int {
 	return nodes
 }
 
-// func TestMovePerft(t *testing.T) {
+/*
+	8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -  wrong at depth 6
+	r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1  wrong at depth 4
+	r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1	wrong at depth 3
+*/
 
-// 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-// 	fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0"
-// 	p := NewFenPosition(fen)
-// 	depth := 2
-// 	fmt.Println("===================================================")
-// 	p.Print()
-// 	nodes := Perft(p, depth)
-// 	fmt.Printf("No of Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles\n", fen, depth, nodes, captures, epCap, castles)
-// 	// fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
+func TestMovePerft(t *testing.T) {
 
-// 	fmt.Println("====================================================")
-// }
+	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+	p := NewFenPosition(fen)
+	depth := 3
+	fmt.Println("===================================================")
+	p.Print()
+	nodes := Perft(p, depth)
+	fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
+	// fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
+
+	fmt.Println("====================================================")
+}
 
 // tests := []struct {
 // 	fen   string
