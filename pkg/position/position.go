@@ -276,25 +276,121 @@ func (p *Position) getQueenAttacks(square int) bitboard.Bitboard {
 	return p.getRookAttacks(square) | p.getBishopAttacks(square)
 }
 
-/*
-	fenPosition := convertBitboardsToFenString(p.bitboards)
-	activeSideString, _ := p.convertActiveSideToString()
-	castlingRightsString := p.convertCastlingRightsToFenString()
-	enPassanteSqFenString := p.convertEnPassanteSqToFenString()
-	fenPosition += " " + activeSideString +
-		" " + castlingRightsString +
-		" " + enPassanteSqFenString +
-		" " + strconv.Itoa(p.moveCt) +
-		" " + strconv.Itoa(p.halfMoveCt)
-	return fenPosition*/
-// func (p *Position) GetFen() string {
-// 	for i := 0; i < 64; i++ {
-// 		for piece, pieceBB:=range p.bitboards[White]{
+func (p *Position) GetFen() string {
+	var board [64]string
+	for index := range board {
+		for piece, pieceBB := range p.bitboards[White] {
+			if pieceBB.BitIsSet(index) {
+				switch piece {
+				case Pawn:
+					board[index] = "P"
+				case Knight:
+					board[index] = "N"
+				case King:
+					board[index] = "K"
+				case Queen:
+					board[index] = "Q"
+				case Rook:
+					board[index] = "R"
+				case Bishop:
+					board[index] = "B"
+				}
+			}
+		}
+		for piece, pieceBB := range p.bitboards[Black] {
+			if pieceBB.BitIsSet(index) {
+				switch piece {
+				case Pawn:
+					board[index] = "p"
+				case Knight:
+					board[index] = "n"
+				case King:
+					board[index] = "k"
+				case Queen:
+					board[index] = "q"
+				case Rook:
+					board[index] = "r"
+				case Bishop:
+					board[index] = "b"
+				}
+			}
+		}
+		// }
+	}
 
-//			}
-//		}
-//		return ""
-//	}
+	fstr := ""
+
+	for rank := 0; rank < 8; rank++ {
+		var empty = 0
+		for file := 0; file < 8; file++ {
+
+			// fmt.Println(empty)
+			square := rank*8 + file
+
+			// fmt.Println(board[9])
+			if board[square] != "" {
+				if empty > 0 {
+					fstr += strconv.Itoa(empty)
+					empty = 0
+				}
+				fstr += board[square]
+			} else {
+				empty += 1
+			}
+
+		}
+		if empty > 0 {
+			fstr += strconv.Itoa(empty)
+		}
+		if rank != 7 {
+			fstr += "/"
+
+		}
+	}
+	fstr += " "
+	switch p.side {
+	case White:
+		fstr += "w"
+	case Black:
+		fstr += "b"
+	}
+
+	fstr += " "
+
+	if p.castlingRights != 0 {
+		if p.castlingRights&WhiteKingside == WhiteKingside {
+			fstr += "K"
+		}
+		if p.castlingRights&WhiteQueenside == WhiteQueenside {
+			fstr += "Q"
+		}
+		if p.castlingRights&BlackKingside == BlackKingside {
+			fstr += "k"
+		}
+		if p.castlingRights&BlackQueenside == BlackQueenside {
+			fstr += "q"
+		}
+	} else {
+		fstr += "-"
+	}
+
+	fstr += " "
+
+	switch p.enPassanteSq {
+	case 64:
+		fstr += "-"
+	default:
+		fstr += moves.IndexToAlgebraic(p.enPassanteSq)
+
+	}
+	fstr += " "
+	fstr += strconv.Itoa(p.halfMoveCount)
+
+	fstr += " "
+	fstr += strconv.Itoa(p.moveCount)
+
+	return fstr
+}
 func (p *Position) IsSquareAttackedBy(square, side int) bool {
 
 	pawnAttacks := attacks.Pawns[side^1][square] & p.bitboards[side][Pawn]

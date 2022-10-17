@@ -37,8 +37,10 @@ func TestMoveGeneration(t *testing.T) {
 	// // double check
 	// fen = "r1b1kbr1/pppp3p/5p2/5Nn1/2B5/8/PPPP1P1P/RNBQ1RK1 b Qkq - 0 1"
 	// fen = "rnb1kbnr/pppp1ppp/8/8/4q3/8/PPPPBPPP/RNBQK1NR w KQkq - 0 1"
-	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
-	p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
+	p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
+	p = NewFenPosition("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10")
+	// p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
+	fmt.Println(p.GetFen())
 	fmt.Println("old Pos")
 	p.Print()
 	// fmt.Println(p.prevPosition)
@@ -248,20 +250,20 @@ func Perft(position *Position, depth int) int {
 	r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1	wrong at depth 3
 */
 
-func TestMovePerft(t *testing.T) {
+// func TestMovePerft(t *testing.T) {
 
-	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-	p := NewFenPosition(fen)
-	depth := 3
-	fmt.Println("===================================================")
-	p.Print()
-	nodes := Perft(p, depth)
-	fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
-	// fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
+// 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+// 	fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+// 	p := NewFenPosition(fen)
+// 	depth := 3
+// 	fmt.Println("===================================================")
+// 	p.Print()
+// 	nodes := Perft(p, depth)
+// 	fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
+// 	// fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
 
-	fmt.Println("====================================================")
-}
+// 	fmt.Println("====================================================")
+// }
 
 // tests := []struct {
 // 	fen   string
