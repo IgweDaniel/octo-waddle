@@ -29,19 +29,21 @@ func generatePawnCaptures(p *Position, moves *moves.Moves) {
 	for !pawns.IsEmpty() {
 		origin := pawns.LsbIdx()
 		pawns.RemoveBit(origin)
-		captures := attacks.Pawns[side][origin] & p.bitboards[side^1][OccupancySq]
-		for !captures.IsEmpty() {
+
+		for captures := attacks.Pawns[side][origin] & p.bitboards[side^1][OccupancySq]; !captures.IsEmpty(); {
 			// check for promotion capture
 			promoteRanks := bitboard.NewMask(uint64(rank1) | uint64(rank8))
 			dest := captures.LsbIdx()
-			if promoteRanks.BitIsSet(dest) {
-				moves.AddPromotion(Pawn, origin, dest, Queen, true)
-				moves.AddPromotion(Pawn, origin, dest, Rook, true)
-				moves.AddPromotion(Pawn, origin, dest, Bishop, true)
-				moves.AddPromotion(Pawn, origin, dest, Knight, true)
+			if p.bitboards[p.side^1][OccupancySq].BitIsSet(dest) {
+				if promoteRanks.BitIsSet(dest) {
+					moves.AddPromotion(Pawn, origin, dest, Queen, true)
+					// moves.AddPromotion(Pawn, origin, dest, Rook, true)
+					// moves.AddPromotion(Pawn, origin, dest, Bishop, true)
+					// moves.AddPromotion(Pawn, origin, dest, Knight, true)
 
-			} else {
-				moves.AddCapture(Pawn, origin, dest)
+				} else {
+					moves.AddCapture(Pawn, origin, dest)
+				}
 			}
 			captures.RemoveBit(dest)
 		}
@@ -78,14 +80,17 @@ func generatePawnPushes(p *Position, moves *moves.Moves) {
 		if !occupancy.BitIsSet(dest) {
 			if pawnStartRanks.BitIsSet(origin) {
 				dblPushDest := origin + 2*step*direction
-				moves.Add(Pawn, origin, dblPushDest)
+				if !occupancy.BitIsSet(dblPushDest) {
+
+					moves.Add(Pawn, origin, dblPushDest)
+				}
 			}
 
 			if promoteRank.BitIsSet(dest) {
 				moves.AddPromotion(Pawn, origin, dest, Queen, false)
-				moves.AddPromotion(Pawn, origin, dest, Rook, false)
-				moves.AddPromotion(Pawn, origin, dest, Bishop, false)
-				moves.AddPromotion(Pawn, origin, dest, Knight, false)
+				// moves.AddPromotion(Pawn, origin, dest, Rook, false)
+				// moves.AddPromotion(Pawn, origin, dest, Bishop, false)
+				// moves.AddPromotion(Pawn, origin, dest, Knight, false)
 			} else {
 				moves.Add(Pawn, origin, dest)
 			}
@@ -175,6 +180,7 @@ func generateQueenMoves(p *Position, moves *moves.Moves) {
 }
 
 func generateKingMoves(p *Position, moves *moves.Moves) {
+
 	activeSideOccupancy := p.bitboards[p.side][OccupancySq]
 	for king := p.bitboards[p.side][King]; !king.IsEmpty(); {
 
@@ -194,6 +200,7 @@ func generateKingMoves(p *Position, moves *moves.Moves) {
 	}
 }
 func generateKingCastleMoves(p *Position, moves *moves.Moves) {
+
 	occupancy := p.getOccupancy()
 	var kingSideCastle, queenSideCastle, posIdx = WhiteKingside, WhiteQueenside, 60
 	kingsidePathMask := bitboard.NewMask(0x6000000000000000)

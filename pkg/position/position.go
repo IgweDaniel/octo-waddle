@@ -277,7 +277,7 @@ func (p *Position) getQueenAttacks(square int) bitboard.Bitboard {
 
 func (p *Position) IsSquareAttackedBy(square, side int) bool {
 
-	pawnAttacks := attacks.Pawns[side^1][square] & p.bitboards[side][Pawn]
+	pawnAttacks := attacks.Pawns[p.side][square] & p.bitboards[side][Pawn]
 
 	if !pawnAttacks.IsEmpty() {
 		return true
@@ -302,7 +302,7 @@ func (p *Position) IsSquareAttackedBy(square, side int) bool {
 	}
 
 	kingAttacks := attacks.Kings[square] & p.bitboards[side][King]
-
+	// (pawnAttacks | knightAttacks | bishopAttacks | rookAttacks | queenAttacks | queenAttacks).Print()
 	return !kingAttacks.IsEmpty()
 }
 
@@ -398,22 +398,22 @@ func (p *Position) MakeMove(move moves.Move) {
 			}
 		}
 
-		if move.Enpassant() {
-			if p.side == Black {
-				capturePieceBb.RemoveBit(dest - 8)
-			} else {
-				capturePieceBb.RemoveBit(dest + 8)
-			}
-		}
-
 		if capturePiece == Rook {
-
+			// fmt.Println("rook capture")
 			if (dest % 8) == 7 {
 				p.revokeKingSideCastle(p.side ^ 1)
 			} else if (dest % 8) == 0 {
 				p.revokeQueenSideCastle(p.side ^ 1)
 			}
 
+		}
+
+		if move.Enpassant() {
+			if p.side == Black {
+				capturePieceBb.RemoveBit(dest - 8)
+			} else {
+				capturePieceBb.RemoveBit(dest + 8)
+			}
 		}
 
 	}
