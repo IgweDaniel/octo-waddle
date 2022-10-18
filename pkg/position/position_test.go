@@ -2,7 +2,6 @@ package position
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/igwedaniel/dolly/pkg/moves"
@@ -102,14 +101,14 @@ func TestPositionIsAttacked(t *testing.T) {
 
 }
 
-func TestPositionCopy(t *testing.T) {
-	p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
-	pcopy := p.copy()
-	isCopy := reflect.DeepEqual(pcopy, p)
-	if !isCopy {
-		t.Errorf("incorrect copy status expected %v, got %v", true, isCopy)
-	}
-}
+// func TestPositionCopy(t *testing.T) {
+// 	p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
+// 	pcopy := p.copy()
+// 	isCopy := reflect.DeepEqual(pcopy, p)
+// 	if !isCopy {
+// 		t.Errorf("incorrect copy status expected %v, got %v", true, isCopy)
+// 	}
+// }
 
 func findMove(movelist moves.Moves, from, to string) (moves.Move, error) {
 	var movehit moves.Move

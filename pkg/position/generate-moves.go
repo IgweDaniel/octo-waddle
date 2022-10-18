@@ -215,14 +215,14 @@ func generateKingCastleMoves(p *Position, moves *moves.Moves) {
 	}
 	if p.castlingRights&kingSideCastle != 0 {
 		if kingsidePathMask&occupancy == 0 {
-			if !p.IsSquareAttackedBy(posIdx+1, p.side^1) && !p.IsSquareAttackedBy(posIdx+2, p.side^1) {
+			if !p.IsSquareAttackedBy(posIdx, p.side^1) && !p.IsSquareAttackedBy(posIdx+1, p.side^1) && !p.IsSquareAttackedBy(posIdx+2, p.side^1) {
 				moves.AddCastling(King, posIdx, posIdx+2)
 			}
 		}
 	}
 	if p.castlingRights&queenSideCastle != 0 {
 		if queensidePathMask&occupancy == 0 {
-			if !p.IsSquareAttackedBy(posIdx-1, p.side^1) && !p.IsSquareAttackedBy(posIdx-2, p.side^1) {
+			if !p.IsSquareAttackedBy(posIdx, p.side^1) && !p.IsSquareAttackedBy(posIdx-1, p.side^1) && !p.IsSquareAttackedBy(posIdx-2, p.side^1) {
 				moves.AddCastling(King, posIdx, posIdx-2)
 			}
 		}

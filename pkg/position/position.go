@@ -43,7 +43,7 @@ const (
 )
 
 type Position struct {
-	bitboards      [2][]bitboard.Bitboard
+	bitboards      [2][7]bitboard.Bitboard
 	castlingRights int
 	side           int
 	enPassanteSq   int
@@ -104,8 +104,8 @@ func tokenizeFenString(fen string) (string, int, int, int, int, int) {
 
 func NewFenPosition(fen string) *Position {
 	p := new(Position)
-	p.bitboards[0] = make([]bitboard.Bitboard, 7)
-	p.bitboards[1] = make([]bitboard.Bitboard, 7)
+	// p.bitboards[0] = make([]bitboard.Bitboard, 7)
+	// p.bitboards[1] = make([]bitboard.Bitboard, 7)
 	fenPosition, side, castlingRights, enPassanteSq, moveCount, halfMoveCount := tokenizeFenString(fen)
 
 	p.setBitboardsFromFen(fenPosition)
@@ -117,17 +117,23 @@ func NewFenPosition(fen string) *Position {
 	return p
 }
 
-func (p Position) copy() *Position {
-	pCopied := p
-	// prevPos := *p.prevPosition
-	pCopied.bitboards[0] = make([]bitboard.Bitboard, len(p.bitboards[0]))
-	pCopied.bitboards[1] = make([]bitboard.Bitboard, len(p.bitboards[1]))
+func (p Position) copy() Position {
+	var pCopied Position
+	pCopied.bitboards[0] = p.bitboards[0]
+	pCopied.bitboards[1] = p.bitboards[1]
 
-	copy(pCopied.bitboards[0], p.bitboards[0])
-	copy(pCopied.bitboards[1], p.bitboards[1])
-	// *pCopied.prevPosition = prevPos
+	if p.prevPosition != nil {
+		prevPos := p.prevPosition.copy()
+		pCopied.prevPosition = &prevPos
 
-	return &pCopied
+	}
+	pCopied.castlingRights = p.castlingRights
+	pCopied.halfMoveCount = p.halfMoveCount
+	pCopied.moveCount = p.moveCount
+	pCopied.side = p.side
+	pCopied.enPassanteSq = p.enPassanteSq
+
+	return pCopied
 }
 
 func (p *Position) setBitboardsFromFen(fenPosition string) {
@@ -500,6 +506,7 @@ func (p *Position) MakeMove(move moves.Move) {
 	isDoublePawnPush := piece == Pawn && math.Abs(float64(dest-origin)) == 16
 	pieceBb.RemoveBit(origin)
 	pieceBb.SetBit(dest)
+	// reset enpassant
 	p.enPassanteSq = 64
 
 	if move.IsCapture() {
@@ -525,6 +532,7 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 
 		if move.Enpassant() {
+
 			if p.side == Black {
 				capturePieceBb.RemoveBit(dest - 8)
 			} else {
@@ -543,6 +551,7 @@ func (p *Position) MakeMove(move moves.Move) {
 	}
 
 	if isDoublePawnPush {
+
 		p.enPassanteSq = dest + 8
 		if p.side == Black {
 			p.enPassanteSq = dest - 8
@@ -563,7 +572,8 @@ func (p *Position) MakeMove(move moves.Move) {
 	}
 
 	if move.IsCastling() {
-		fmt.Println("castling")
+		// fmt.Println("castling")
+		// fmt.Println(p.GetFen())
 		if dest == 2 || dest == 58 {
 			p.bitboards[p.side][Rook].SetBit(dest + 1)
 			p.bitboards[p.side][Rook].RemoveBit(dest - 2)
@@ -580,27 +590,13 @@ func (p *Position) MakeMove(move moves.Move) {
 	p.setOccupancy(Black)
 	p.setOccupancy(White)
 	p.side ^= 1
-	p.prevPosition = prevPos
+	p.prevPosition = &prevPos
 }
 
 func (p *Position) UnMakeMove() {
-	prevPos := p.prevPosition
-
-	if prevPos != nil {
-		*p = *prevPos
-		// p.bitboards[0] = make([]bitboard.Bitboard, len(prevPos.bitboards[0]))
-		// p.bitboards[1] = make([]bitboard.Bitboard, len(prevPos.bitboards[1]))
-
-		// copy(p.bitboards[0], prevPos.bitboards[0])
-		// copy(p.bitboards[1], prevPos.bitboards[1])
-
-		// *p = *prevPos
-		// if prevPos.prevPosition != nil {
-		// 	*p.prevPosition = *prevPos.prevPosition
-		// }
-
+	if p.prevPosition != nil {
+		*p = *p.prevPosition
 	}
-
 }
 
 func (p *Position) revokeKingSideCastle(revokefor int) {
