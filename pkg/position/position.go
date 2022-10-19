@@ -118,21 +118,13 @@ func NewFenPosition(fen string) *Position {
 }
 
 func (p Position) copy() Position {
-	var pCopied Position
-	pCopied.bitboards[0] = p.bitboards[0]
-	pCopied.bitboards[1] = p.bitboards[1]
+	pCopied := p
 
 	if p.prevPosition != nil {
-		prevPos := p.prevPosition.copy()
-		// prevPos.castlingRights = p.prevPosition.castlingRights
+		prevPos := *p.prevPosition
 		pCopied.prevPosition = &prevPos
 
 	}
-	pCopied.castlingRights = p.castlingRights
-	pCopied.halfMoveCount = p.halfMoveCount
-	pCopied.moveCount = p.moveCount
-	pCopied.side = p.side
-	pCopied.enPassanteSq = p.enPassanteSq
 
 	return pCopied
 }
