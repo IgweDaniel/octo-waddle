@@ -8,21 +8,21 @@ import (
 )
 
 func TestMoveGeneration(t *testing.T) {
-
-	// p := NewFenPosition("8/8/8/2p1pP2/1P1P4/8/8/8 w KQkq e6 0 1")
+	var p *Position
+	// p = NewFenPosition("8/8/8/2p1pP2/1P1P4/8/8/8 w KQkq e6 0 1")
 
 	// tricky position
-	p := NewFenPosition("rnbqkbnr/pppp1p1p/8/4p2P/4PPp1/8/PPPP2P1/RNBQKBNR b KQkq f3 0 4")
+	// p = NewFenPosition("rnbqkbnr/pppp1p1p/8/4p2P/4PPp1/8/PPPP2P1/RNBQKBNR b KQkq f3 0 4")
 
 	// killer position
-	// p := NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
+	// p = NewFenPosition("rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1")
 
 	// Knight position
-	// p := NewFenPosition("rnbqkb1r/ppppppp1/5n2/7p/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 1 3")
+	// p = NewFenPosition("rnbqkb1r/ppppppp1/5n2/7p/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 1 3")
 	// p = NewFenPosition("rnbqkb1r/ppppppp1/8/7p/3Pn3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4")
 
 	// Bishop position
-	// p := NewFenPosition("r3k2r/p1pp1pb1/bn1qpnp1/3PN3/1p2PQ2/2N4p/PPPBBPPP/R3K2R w KQkq - 2 2")
+	// p = NewFenPosition("r3k2r/p1pp1pb1/bn1qpnp1/3PN3/1p2PQ2/2N4p/PPPBBPPP/R3K2R w KQkq - 2 2")
 
 	// start position
 	// p = NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -38,9 +38,9 @@ func TestMoveGeneration(t *testing.T) {
 	// fen := "r1b1kbr1/pppp3p/5p2/5Nn1/2B5/8/PPPP1P1P/RNBQ1RK1 b Qkq - 0 1"
 	// fen := "rnb1kbnr/pppp1ppp/8/8/4q3/8/PPPPBPPP/RNBQK1NR w KQkq - 0 1"
 	// p = NewFenPosition(fen)
-	p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
-	p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
-	p = NewFenPosition("5rk1/p2p2pp/5n2/b3p3/Np6/1P3NBn/pP1P1PPP/Rq1Q1K1R w - - 14 11 ")
+	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
+	// p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
+	p = NewFenPosition("r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/r2Q1RK1 w kq - 0 2")
 	// p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
 
 	fmt.Println("======legal moves======")
@@ -48,17 +48,19 @@ func TestMoveGeneration(t *testing.T) {
 	legalmoves.Print()
 	fmt.Println("======legal moves======")
 
-	fmt.Println("======pseudo legal moves======")
-	moves := p.GenerateMoves()
-	moves.Print()
-	fmt.Println("======pseudo legal moves======")
+	// fmt.Println("======pseudo legal moves======")
+	// moves := p.GenerateMoves()
+	// moves.Print()
+	// fmt.Println("======pseudo legal moves======")
 
 	// chop move
 	// validMove, err := findMove(moves, "b7", "a8")
 	fmt.Println(p.GetFen())
 	fmt.Println("original position")
 	p.Print()
-	// // validMove, err := findMove(moves, "d8", "e8")
+	validMove, _ := FindMove(legalmoves, "d1", "a1")
+	p.MakeMove(validMove)
+	p.Print()
 	// validMove, err := findMove(moves, "e8", "c8")
 
 	// if err != nil {
@@ -97,16 +99,9 @@ func TestMoveGeneration(t *testing.T) {
 }
 
 func onlyLegalMoves(p Position) moves.Moves {
-	// var pieceMaps = map[int]string{1: "King",
-	// 	2: "Queen",
-	// 	3: "Bishop",
-	// 	4: "Knight",
-	// 	5: "Rook",
-	// 	6: "Pawn",
-	// }
+
 	legalmoves := moves.NewList()
 
-	// fmt.Println("only legal", &p.prevPosition)
 	for _, move := range p.GenerateMoves() {
 
 		p.MakeMove(move)
@@ -170,57 +165,114 @@ func Perft(position *Position, depth int) int {
 	return nodes
 }
 
-func PerftLegal(position *Position, depth int) int {
+// func PerftLegal(position *Position, depth int) int {
+
+// 	nodes := 0
+// 	moves := onlyLegalMoves(*position)
+// 	if depth == 0 {
+// 		return 1
+// 	}
+
+// 	for _, move := range moves {
+// 		if move.IsCastling() {
+// 			castles += 1
+// 		}
+// 		if move.Enpassant() {
+// 			epCap += 1
+// 		}
+// 		if move.IsCapture() && !move.Enpassant() {
+// 			captures += 1
+// 		}
+// 		if move.IsPromotion() {
+// 			prom += 1
+// 		}
+// 		position.MakeMove(move)
+// 		nodes += PerftLegal(position, depth-1)
+// 		position.UnMakeMove()
+
+// 	}
+// 	return nodes
+// }
+
+func PerftLegalWithPrint(position *Position, depth int, parentMv moves.Move) int {
 
 	nodes := 0
-	moves := onlyLegalMoves(*position)
+	legalmoves := onlyLegalMoves(*position)
 	if depth == 0 {
 		return 1
 	}
 
-	for _, move := range moves {
-		if move.IsCastling() {
-			castles += 1
-		}
-		if move.Enpassant() {
-			epCap += 1
-		}
-		if move.IsCapture() && !move.Enpassant() {
-			captures += 1
-		}
-		if move.IsPromotion() {
-			prom += 1
-		}
+	// if parentMv.Origin() == 59 && parentMv.Dest() == 56 {
+	// 	fmt.Println("is castling move", parentMv.IsCastling())
+	// 	fmt.Println(position.GetFen(), "===", len(legalmoves))
+	// 	legalmoves.Print()
+	// }
+	for _, move := range legalmoves {
 		position.MakeMove(move)
-		nodes += PerftLegal(position, depth-1)
+		nodes += PerftLegalWithPrint(position, depth-1, move)
+
 		position.UnMakeMove()
 
 	}
+
 	return nodes
 }
 
 /*
+
 	8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -  wrong at depth 6
 	r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1  wrong at depth 4
 	r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1	wrong at depth 3
 */
+
+func PerftRoot(p *Position, depth int) {
+	legalmoves := onlyLegalMoves(*p)
+	totalnodes := 0
+	// fmt.Println(p.GetFen())
+
+	for _, move := range legalmoves {
+		p.MakeMove(move)
+		nodes := PerftLegalWithPrint(p, depth-1, move)
+		totalnodes += nodes
+
+		if move.IsPromotion() {
+
+			fmt.Printf("%s%s%s: %d\n", moves.IndexToAlgebraic(move.Origin()), moves.IndexToAlgebraic(move.Dest()), map[int]string{
+				Queen:  "q",
+				Rook:   "r",
+				Bishop: "b",
+				Knight: "n",
+			}[move.PromotedPiece()], nodes)
+		} else {
+
+			fmt.Printf("%s%s: %d\n", moves.IndexToAlgebraic(move.Origin()), moves.IndexToAlgebraic(move.Dest()), nodes)
+		}
+		p.UnMakeMove()
+	}
+	fmt.Printf("\n\ntotal nodes searched: %d for moves count %d\n", totalnodes, len(legalmoves))
+	fmt.Println("from Dolly")
+
+}
 
 func TestMovePerft(t *testing.T) {
 
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	// fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
 	fen = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1"
-	p := NewFenPosition(fen)
-	depth := 4
-	fmt.Println("===================================================")
-	p.Print()
-	// nodes := Perft(p, depth)
-	nodes := PerftLegal(p, depth)
-	fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
-	// fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
-	// fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
 
-	fmt.Println("====================================================")
+	fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+	p := NewFenPosition(fen)
+	depth := 5
+	PerftRoot(p, depth)
+	// fmt.Println("===================================================")
+	// p.Print()
+	// // nodes := Perft(p, depth)
+	// nodes := PerftLegal(p, depth)
+	// fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
+	// // fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
+	// // fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
+
+	// fmt.Println("====================================================")
 }
 
 // func TestMoveLegalPerft(t *testing.T) {

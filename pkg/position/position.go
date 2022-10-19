@@ -124,6 +124,7 @@ func (p Position) copy() Position {
 
 	if p.prevPosition != nil {
 		prevPos := p.prevPosition.copy()
+		// prevPos.castlingRights = p.prevPosition.castlingRights
 		pCopied.prevPosition = &prevPos
 
 	}
@@ -522,13 +523,16 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 
 		if capturePiece == Rook {
-			// fmt.Println("rook capture")
-			if (dest % 8) == 7 {
-				p.revokeKingSideCastle(p.side ^ 1)
-			} else if (dest % 8) == 0 {
-				p.revokeQueenSideCastle(p.side ^ 1)
+			// In the case of capture of a promoted rook e.g r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/r2Q1RK1 w kq - 0 2
+			if dest == 0 {
+				p.revokeKingSideCastle(Black)
+			} else if dest == 7 {
+				p.revokeQueenSideCastle(Black)
+			} else if dest == 63 {
+				p.revokeKingSideCastle(White)
+			} else if dest == 56 {
+				p.revokeQueenSideCastle(White)
 			}
-
 		}
 
 		if move.Enpassant() {
@@ -559,13 +563,17 @@ func (p *Position) MakeMove(move moves.Move) {
 	}
 
 	if !move.IsCastling() && piece == King {
-		p.revokeKingSideCastle(p.side)
-		p.revokeQueenSideCastle(p.side)
+		if origin == 60 || origin == 4 {
+			p.revokeKingSideCastle(p.side)
+			p.revokeQueenSideCastle(p.side)
+		}
 	}
 
 	if !move.IsCastling() && piece == Rook {
+
 		if origin == 7 || origin == 63 {
 			p.revokeKingSideCastle(p.side)
+
 		} else if origin == 0 || origin == 56 {
 			p.revokeQueenSideCastle(p.side)
 		}
@@ -599,18 +607,18 @@ func (p *Position) UnMakeMove() {
 	}
 }
 
-func (p *Position) revokeKingSideCastle(revokefor int) {
-	if revokefor == Black {
-		p.castlingRights &= (WhiteKingside | WhiteQueenside | BlackQueenside)
+func (p *Position) revokeKingSideCastle(side int) {
+	if side == Black {
+		p.castlingRights &= ^BlackKingside
 	} else {
-		p.castlingRights &= (BlackKingside | WhiteQueenside | BlackQueenside)
+		p.castlingRights &= ^WhiteKingside
 	}
 }
 
-func (p *Position) revokeQueenSideCastle(revokefor int) {
-	if revokefor == Black {
-		p.castlingRights &= (BlackKingside | WhiteKingside | WhiteQueenside)
+func (p *Position) revokeQueenSideCastle(side int) {
+	if side == Black {
+		p.castlingRights &= ^BlackQueenside
 	} else {
-		p.castlingRights &= (BlackKingside | WhiteKingside | BlackQueenside)
+		p.castlingRights &= ^WhiteQueenside
 	}
 }
