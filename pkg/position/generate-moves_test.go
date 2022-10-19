@@ -40,7 +40,7 @@ func TestMoveGeneration(t *testing.T) {
 	// p = NewFenPosition(fen)
 	// p = NewFenPosition("rnbq1rk1/pp1p1pPp/3b4/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR b KQ e6 0 1")
 	// p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
-	p = NewFenPosition("r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/r2Q1RK1 w kq - 0 2")
+	p = NewFenPosition("r3kb1r/p1ppqp2/bn2pQp1/3PN3/1p2P3/2N4p/PPPBBPPP/R3K2R w KQkq - 1 2")
 	// p = NewFenPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
 
 	fmt.Println("======legal moves======")
@@ -56,11 +56,13 @@ func TestMoveGeneration(t *testing.T) {
 	// chop move
 	// validMove, err := findMove(moves, "b7", "a8")
 	fmt.Println(p.GetFen())
-	fmt.Println("original position")
+	// fmt.Println("original position")
 	p.Print()
-	validMove, _ := FindMove(legalmoves, "d1", "a1")
+	validMove, _ := FindMove(legalmoves, "f6", "h8")
 	p.MakeMove(validMove)
 	p.Print()
+	// fmt.Println(p.GetFen())
+	// fmt.Println("POSITION CORRECT:", p.GetFen() == "r3kb1Q/p1ppqp2/bn2p1p1/3PN3/1p2P3/2N4p/PPPBBPPP/R3K2R b KQq - 1 2")
 	// validMove, err := findMove(moves, "e8", "c8")
 
 	// if err != nil {
@@ -111,6 +113,8 @@ func onlyLegalMoves(p Position) moves.Moves {
 
 		if !p.IsSquareAttackedBy(kingSqIdx, p.side) {
 			legalmoves = append(legalmoves, move)
+		} else {
+			checks += 1
 		}
 		p.UnMakeMove()
 	}
@@ -120,79 +124,6 @@ func onlyLegalMoves(p Position) moves.Moves {
 //
 
 // p := NewFenPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")/
-
-var captures = 0
-
-var checks = 0
-var epCap = 0
-var castles = 0
-var prom = 0
-
-func Perft(position *Position, depth int) int {
-
-	nodes := 0
-	moves := position.GenerateMoves()
-	if depth == 0 {
-		return 1
-	}
-
-	for _, move := range moves {
-		// pos := position.copy()
-		position.MakeMove(move)
-		kingSqBB := position.bitboards[position.side^1][King]
-		kingSqIdx := kingSqBB.LsbIdx()
-
-		if !position.IsSquareAttackedBy(kingSqIdx, position.side) {
-			if move.Enpassant() {
-				epCap += 1
-			}
-			if move.IsCapture() {
-				captures += 1
-			}
-			if move.IsCastling() {
-				castles += 1
-			}
-			if move.IsPromotion() {
-				prom += 1
-			}
-			nodes += Perft(position, depth-1)
-		} else {
-			checks += 1
-		}
-		position.UnMakeMove()
-
-	}
-	return nodes
-}
-
-// func PerftLegal(position *Position, depth int) int {
-
-// 	nodes := 0
-// 	moves := onlyLegalMoves(*position)
-// 	if depth == 0 {
-// 		return 1
-// 	}
-
-// 	for _, move := range moves {
-// 		if move.IsCastling() {
-// 			castles += 1
-// 		}
-// 		if move.Enpassant() {
-// 			epCap += 1
-// 		}
-// 		if move.IsCapture() && !move.Enpassant() {
-// 			captures += 1
-// 		}
-// 		if move.IsPromotion() {
-// 			prom += 1
-// 		}
-// 		position.MakeMove(move)
-// 		nodes += PerftLegal(position, depth-1)
-// 		position.UnMakeMove()
-
-// 	}
-// 	return nodes
-// }
 
 func PerftLegalWithPrint(position *Position, depth int, parentMv moves.Move) int {
 
@@ -208,6 +139,19 @@ func PerftLegalWithPrint(position *Position, depth int, parentMv moves.Move) int
 	// 	legalmoves.Print()
 	// }
 	for _, move := range legalmoves {
+		if move.IsCastling() {
+			castles += 1
+		}
+		if move.Enpassant() {
+			epCaptures += 1
+		}
+		if move.IsCapture() {
+			captures += 1
+		}
+
+		if move.IsPromotion() {
+			promotions += 1
+		}
 		position.MakeMove(move)
 		nodes += PerftLegalWithPrint(position, depth-1, move)
 
@@ -225,15 +169,36 @@ func PerftLegalWithPrint(position *Position, depth int, parentMv moves.Move) int
 	r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1	wrong at depth 3
 */
 
+var (
+	totalnodes = 0
+	captures   = 0
+	checks     = 0
+	epCaptures = 0
+	castles    = 0
+	promotions = 0
+	checkmates = 0
+)
+
 func PerftRoot(p *Position, depth int) {
 	legalmoves := onlyLegalMoves(*p)
-	totalnodes := 0
-	// fmt.Println(p.GetFen())
 
 	for _, move := range legalmoves {
 		p.MakeMove(move)
 		nodes := PerftLegalWithPrint(p, depth-1, move)
 		totalnodes += nodes
+		if move.IsCastling() {
+			castles += 1
+		}
+		if move.Enpassant() {
+			epCaptures += 1
+		}
+		if move.IsCapture() {
+			captures += 1
+		}
+
+		if move.IsPromotion() {
+			promotions += 1
+		}
 
 		if move.IsPromotion() {
 
@@ -244,7 +209,6 @@ func PerftRoot(p *Position, depth int) {
 				Knight: "n",
 			}[move.PromotedPiece()], nodes)
 		} else {
-
 			fmt.Printf("%s%s: %d\n", moves.IndexToAlgebraic(move.Origin()), moves.IndexToAlgebraic(move.Dest()), nodes)
 		}
 		p.UnMakeMove()
@@ -258,17 +222,17 @@ func TestMovePerft(t *testing.T) {
 
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	// fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-	fen = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1"
+	fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"
 
-	fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
+	fen = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1"
 	p := NewFenPosition(fen)
-	depth := 5
+	depth := 4
+
+	// PerftRoot(p, depth)
 	PerftRoot(p, depth)
-	// fmt.Println("===================================================")
-	// p.Print()
-	// // nodes := Perft(p, depth)
-	// nodes := PerftLegal(p, depth)
-	// fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
+
+	fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions %d checkmates\n",
+		fen, depth, totalnodes, captures, epCaptures, castles, promotions, checkmates)
 	// // fmt.Printf("Nodes for %s at depth: %d is %d nodes %d captures %d enpassant captures %d castles %d promotions \n", fen, depth, nodes, captures, epCap, castles, prom)
 	// // fmt.Printf("No of Nodes for %s at depth: %d is %d nodes  %d captures %d checks and %d enpassante\n", fen, depth, nodes, captures, checks, epCap)
 

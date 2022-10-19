@@ -119,12 +119,20 @@ func NewFenPosition(fen string) *Position {
 
 func (p Position) copy() Position {
 	pCopied := p
+	// var pCopied Position
+	// pCopied.bitboards[0] = p.bitboards[0]
+	// pCopied.bitboards[1] = p.bitboards[1]
 
 	if p.prevPosition != nil {
 		prevPos := *p.prevPosition
 		pCopied.prevPosition = &prevPos
 
 	}
+	// pCopied.castlingRights = p.castlingRights
+	// pCopied.halfMoveCount = p.halfMoveCount
+	// pCopied.moveCount = p.moveCount
+	// pCopied.side = p.side
+	// pCopied.enPassanteSq = p.enPassanteSq
 
 	return pCopied
 }
@@ -515,11 +523,12 @@ func (p *Position) MakeMove(move moves.Move) {
 		}
 
 		if capturePiece == Rook {
+
 			// In the case of capture of a promoted rook e.g r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/r2Q1RK1 w kq - 0 2
 			if dest == 0 {
-				p.revokeKingSideCastle(Black)
-			} else if dest == 7 {
 				p.revokeQueenSideCastle(Black)
+			} else if dest == 7 {
+				p.revokeKingSideCastle(Black)
 			} else if dest == 63 {
 				p.revokeKingSideCastle(White)
 			} else if dest == 56 {
@@ -608,6 +617,7 @@ func (p *Position) revokeKingSideCastle(side int) {
 }
 
 func (p *Position) revokeQueenSideCastle(side int) {
+
 	if side == Black {
 		p.castlingRights &= ^BlackQueenside
 	} else {
